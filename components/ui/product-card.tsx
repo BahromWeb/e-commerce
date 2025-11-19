@@ -1,0 +1,68 @@
+"use client";
+
+import { Product } from "@/lib/types";
+import Link from "next/link";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState, addToCart } from "@/lib/store";
+import { useToast } from "./toast-provider";
+import { useState } from "react";
+
+export default function ProductCard({ product }: { product: Product }) {
+  const dispatch = useDispatch();
+  const { user } = useSelector((state: RootState) => state.auth);
+  const { showToast } = useToast();
+  const [quantity, setQuantity] = useState(1);
+
+  const handleAddToCart = () => {
+    if (!user) {
+      showToast("Please login first", "warning");
+      return;
+    }
+    dispatch(addToCart({ product, quantity }));
+    showToast(`Added ${quantity} item(s) to cart`, "success");
+    setQuantity(1);
+  };
+
+  return (
+    <div className="card overflow-hidden">
+      <div className="bg-surface-secondary h-48 flex items-center justify-center">
+        <div className="text-6xl">📦</div>
+      </div>
+      <div className="p-4">
+        <h3 className="font-bold text-lg mb-2">{product.name}</h3>
+        <p className="text-text-secondary text-sm mb-3 line-clamp-2">
+          {product.description}
+        </p>
+        <div className="flex justify-between items-center mb-4">
+          <span className="text-xl font-bold text-accent">${product.price}</span>
+          <span className={`badge ${product.stock > 0 ? "badge-success" : "badge-error"}`}>
+            {product.stock > 0 ? `${product.stock} in stock` : "Out of stock"}
+          </span>
+        </div>
+        <div className="flex gap-2">
+          <input
+            type="number"
+            min="1"
+            max={product.stock}
+            value={quantity}
+            onChange={(e) => setQuantity(Math.min(product.stock, Math.max(1, parseInt(e.target.value) || 1)))}
+            className="input-field flex-1"
+          />
+          <button
+            onClick={handleAddToCart}
+            disabled={product.stock === 0}
+            className="btn-primary"
+          >
+            Add to Cart
+          </button>
+        </div>
+        <Link
+          href={`/products/${product.id}`}
+          className="block text-center text-accent hover:underline mt-3"
+        >
+          View Details
+        </Link>
+      </div>
+    </div>
+  );
+}
