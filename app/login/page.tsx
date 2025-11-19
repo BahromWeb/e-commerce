@@ -22,10 +22,9 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
 
   const loginSchema = yup.object().shape({
-    email: yup
+    username: yup
       .string()
-      .email(t('validation.invalidEmail'))
-      .required(t('validation.required', { field: t('auth.email') })),
+      .required(t('validation.required', { field: 'Username' })),
     password: yup
       .string()
       .min(6, t('validation.passwordMin', { min: 6 }))
@@ -43,15 +42,16 @@ export default function LoginPage() {
   const onSubmit = async (data: any) => {
     try {
       setIsLoading(true);
-      const response = await authAPI.login(data.email, data.password);
+      const response = await authAPI.login(data.username, data.password);
       
       if (response.data.data) {
-        const { token, user } = response.data.data;
+        const { token, username, email, role } = response.data.data;
+        const user = { username, email, role };
         localStorage.setItem("authToken", token);
         localStorage.setItem("user", JSON.stringify(user));
         dispatch(setUser({ user, token }));
         showToast(t('auth.loginSuccess'), "success");
-        router.push(user.role === "admin" ? "/dashboard" : "/products");
+        router.push(role.toUpperCase() === "ADMIN" ? "/dashboard" : "/products");
       }
     } catch (error: any) {
       const message = error.response?.data?.message || t('auth.loginFailed');
@@ -71,15 +71,15 @@ export default function LoginPage() {
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="form-group">
-              <label className="label">{t('auth.email')}</label>
+              <label className="label">Username</label>
               <input
-                {...register("email")}
-                type="email"
+                {...register("username")}
+                type="text"
                 className="input-field"
-                placeholder="your@email.com"
+                placeholder="username"
               />
-              {errors.email && (
-                <p className="text-error text-sm mt-1">{errors.email.message}</p>
+              {errors.username && (
+                <p className="text-error text-sm mt-1">{errors.username.message}</p>
               )}
             </div>
 

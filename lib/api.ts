@@ -10,6 +10,7 @@ const api: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     "Content-Type": "application/json",
+    "Accept-Language": "uz",
   },
 });
 
@@ -40,15 +41,15 @@ api.interceptors.response.use(
 
 // Auth APIs
 export const authAPI = {
-  register: (email: string, password: string, name: string) =>
-    api.post<ApiResponse<{ token: string; user: any }>>("/auth/register", {
+  register: (username: string, email: string, password: string) =>
+    api.post<ApiResponse<{ token: string; type: string; username: string; email: string; role: string }>>("/auth/register", {
+      username,
       email,
       password,
-      name,
     }),
-  login: (email: string, password: string) =>
-    api.post<ApiResponse<{ token: string; user: any }>>("/auth/login", {
-      email,
+  login: (username: string, password: string) =>
+    api.post<ApiResponse<{ token: string; type: string; username: string; email: string; role: string }>>("/auth/login", {
+      username,
       password,
     }),
 };

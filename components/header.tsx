@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from 'next/navigation';
 import { useSelector, useDispatch } from "react-redux";
 import { RootState, logout } from "@/lib/store";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from 'react-i18next';
 import { LanguageSwitcher } from "./ui/language-switcher";
 
@@ -13,7 +13,14 @@ export function Header() {
   const dispatch = useDispatch();
   const { user } = useSelector((state: RootState) => state.auth);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem('language');
+    if (savedLanguage && savedLanguage !== i18n.language) {
+      i18n.changeLanguage(savedLanguage);
+    }
+  }, [i18n]);
 
   const handleLogout = () => {
     localStorage.removeItem("authToken");
@@ -35,7 +42,7 @@ export function Header() {
               <Link href="/products" className="hover:text-accent transition">
                 {t('header.products')}
               </Link>
-              {user.role === "admin" ? (
+              {user.role?.toUpperCase() === "ADMIN" ? (
                 <>
                   <Link href="/dashboard" className="hover:text-accent transition">
                     {t('header.dashboard')}
@@ -86,7 +93,7 @@ export function Header() {
           <Link href="/products" className="block hover:text-accent">
             {t('header.products')}
           </Link>
-          {user.role === "admin" ? (
+          {user.role?.toUpperCase() === "ADMIN" ? (
             <>
               <Link href="/dashboard" className="block hover:text-accent">
                 {t('header.dashboard')}

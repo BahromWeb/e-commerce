@@ -19,7 +19,7 @@ export default function ProfilePage() {
   const [isLoading, setIsLoading] = useState(false);
 
   const profileSchema = yup.object().shape({
-    name: yup.string().required(t('validation.required', { field: t('auth.name') })),
+    username: yup.string().required(t('validation.required', { field: 'Username' })),
     email: yup
       .string()
       .email(t('validation.invalidEmail'))
@@ -35,7 +35,7 @@ export default function ProfilePage() {
   } = useForm({
     resolver: yupResolver(profileSchema),
     defaultValues: {
-      name: user?.name || "",
+      username: user?.username || "",
       email: user?.email || "",
     },
   });
@@ -67,10 +67,10 @@ export default function ProfilePage() {
           <div className="card p-8">
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               <div className="form-group">
-                <label className="label">{t('auth.name')}</label>
-                <input {...register("name")} type="text" className="input-field" />
-                {errors.name && (
-                  <p className="text-error text-sm mt-1">{errors.name.message}</p>
+                <label className="label">Username</label>
+                <input {...register("username")} type="text" className="input-field" />
+                {errors.username && (
+                  <p className="text-error text-sm mt-1">{errors.username.message}</p>
                 )}
               </div>
 

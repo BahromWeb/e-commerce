@@ -23,7 +23,7 @@ export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
 
   const registerSchema = yup.object().shape({
-    name: yup.string().required(t('validation.required', { field: t('auth.name') })),
+    username: yup.string().required(t('validation.required', { field: 'Username' })),
     email: yup
       .string()
       .email(t('validation.invalidEmail'))
@@ -50,13 +50,14 @@ export default function RegisterPage() {
     try {
       setIsLoading(true);
       const response = await authAPI.register(
+        data.username,
         data.email,
-        data.password,
-        data.name
+        data.password
       );
 
       if (response.data.data) {
-        const { token, user } = response.data.data;
+        const { token, username, email, role } = response.data.data;
+        const user = { username, email, role };
         localStorage.setItem("authToken", token);
         localStorage.setItem("user", JSON.stringify(user));
         dispatch(setUser({ user, token }));
@@ -80,15 +81,15 @@ export default function RegisterPage() {
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="form-group">
-              <label className="label">{t('auth.name')}</label>
+              <label className="label">Username</label>
               <input
-                {...register("name")}
+                {...register("username")}
                 type="text"
                 className="input-field"
-                placeholder="John Doe"
+                placeholder="username"
               />
-              {errors.name && (
-                <p className="text-error text-sm mt-1">{errors.name.message}</p>
+              {errors.username && (
+                <p className="text-error text-sm mt-1">{errors.username.message}</p>
               )}
             </div>
 
