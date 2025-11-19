@@ -15,6 +15,7 @@ export function LanguageSwitcher() {
     <button
       onClick={toggleLanguage}
       className="px-3 py-2 rounded-lg bg-surface border border-border text-blue-800 cursor-pointer hover:bg-surface-secondary text-sm font-medium"
+      suppressHydrationWarning
     >
       {i18n.language === 'en' ? t('uzbek') : t('english')}
     </button>

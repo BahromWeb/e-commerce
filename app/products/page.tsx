@@ -30,7 +30,12 @@ export default function ProductsPage() {
       setIsLoading(true);
       let response;
       if (searchTerm || category) {
-        response = await productAPI.search(searchTerm, category, page, 12);
+        response = await productAPI.search(
+          searchTerm || undefined, 
+          category || undefined, 
+          page, 
+          12
+        );
       } else {
         response = await productAPI.getAll(page, 12);
       }
@@ -50,15 +55,18 @@ export default function ProductsPage() {
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
-    setPage(0);
-    fetchProducts();
+    if (page === 0) {
+      fetchProducts();
+    } else {
+      setPage(0);
+    }
   };
 
   return (
     <>
       <Header />
       <main className="page-container">
-        <h1 className="section-title">{t('products.all')}</h1>
+        <h1 className="section-title" suppressHydrationWarning>{t('products.all')}</h1>
 
         <div className="bg-surface border border-border rounded-lg p-6 mb-8">
           <form onSubmit={handleSearch} className="flex flex-col md:flex-row gap-4">
@@ -68,18 +76,20 @@ export default function ProductsPage() {
               className="input-field flex-1"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
+              suppressHydrationWarning
             />
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value)}
               className="input-field md:w-40"
+              suppressHydrationWarning
             >
-              <option value="">{t('products.categories')}</option>
-              <option value="electronics">{t('products.electronics')}</option>
-              <option value="clothing">{t('products.clothing')}</option>
-              <option value="books">{t('products.books')}</option>
+              <option value="" suppressHydrationWarning>{t('products.categories')}</option>
+              <option value="electronics" suppressHydrationWarning>{t('products.electronics')}</option>
+              <option value="clothing" suppressHydrationWarning>{t('products.clothing')}</option>
+              <option value="books" suppressHydrationWarning>{t('products.books')}</option>
             </select>
-            <button type="submit" className="btn-primary">
+            <button type="submit" className="btn-primary" suppressHydrationWarning>
               {t('common.search')}
             </button>
             {user?.role?.toUpperCase() === "ADMIN" && (
@@ -87,6 +97,7 @@ export default function ProductsPage() {
                 type="button"
                 onClick={() => router.push("/products/new")}
                 className="btn-primary"
+                suppressHydrationWarning
               >
                 {t('products.addProduct')}
               </button>
@@ -99,7 +110,7 @@ export default function ProductsPage() {
             <PuffLoader color="#6366f1" size={80} />
           </div>
         ) : products.length === 0 ? (
-          <div className="text-center py-12 text-text-secondary">
+          <div className="text-center py-12 text-text-secondary" suppressHydrationWarning>
             {t('products.noProducts')}
           </div>
         ) : (
