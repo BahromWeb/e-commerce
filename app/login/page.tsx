@@ -9,10 +9,10 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { authAPI } from "@/lib/api";
 import { setUser, setError } from "@/lib/store";
-import { useToast } from "@/components/toast-provider";
 import { Header } from "@/components/header";
 import { AppDispatch } from "@/lib/store";
 import { useTranslation } from 'react-i18next';
+import { useToast } from "@/components/ui/toast-provider";
 
 export default function LoginPage() {
   const dispatch = useDispatch<AppDispatch>();

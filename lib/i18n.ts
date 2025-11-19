@@ -272,11 +272,19 @@ const resources = {
 
 i18n.use(initReactI18next).init({
   resources,
-  lng: typeof window !== 'undefined' ? localStorage.getItem('language') || 'en' : 'en',
+  lng: 'en', // Always start with 'en' to prevent hydration mismatch
   fallbackLng: 'en',
   interpolation: {
     escapeValue: false,
   },
 });
+
+// Set language from localStorage after initialization (client-side only)
+if (typeof window !== 'undefined') {
+  const savedLanguage = localStorage.getItem('language');
+  if (savedLanguage && savedLanguage !== i18n.language) {
+    i18n.changeLanguage(savedLanguage);
+  }
+}
 
 export default i18n;

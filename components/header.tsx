@@ -6,7 +6,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { RootState, logout } from "@/lib/store";
 import { useState } from "react";
 import { useTranslation } from 'react-i18next';
-import { LanguageSwitcher } from "./language-switcher";
+import { LanguageSwitcher } from "./ui/language-switcher";
 
 export function Header() {
   const router = useRouter();

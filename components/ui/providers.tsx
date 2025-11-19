@@ -6,9 +6,9 @@ import { store } from "@/lib/store";
 import { useDispatch } from "react-redux";
 import { setUser } from "@/lib/store";
 import { AppDispatch } from "@/lib/store";
-import { ToastProvider } from "./toast-provider";
 import { I18nextProvider } from 'react-i18next';
 import i18n from '@/lib/i18n';
+import { ToastProvider } from "./toast-provider";
 
 function ClientProviders({ children }: { children: ReactNode }) {
   return (

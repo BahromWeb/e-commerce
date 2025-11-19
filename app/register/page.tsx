@@ -9,11 +9,11 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { authAPI } from "@/lib/api";
 import { setUser } from "@/lib/store";
-import { useToast } from "@/components/toast-provider";
 import { Header } from "@/components/header";
 import { AppDispatch } from "@/lib/store";
 import { useDispatch as useReduxDispatch } from "react-redux";
 import { useTranslation } from 'react-i18next';
+import { useToast } from "@/components/ui/toast-provider";
 
 export default function RegisterPage() {
   const dispatch = useReduxDispatch<AppDispatch>();

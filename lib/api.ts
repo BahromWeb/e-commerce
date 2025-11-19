@@ -1,6 +1,7 @@
 import axios, { AxiosInstance, AxiosError } from "axios";
 import { ApiResponse } from "./types";
 
+
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL ||
   "https://api-e-commerce.tenzorsoft.uz";

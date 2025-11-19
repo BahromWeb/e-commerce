@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { RootState } from "@/lib/store";
 import { orderAPI, productAPI } from "@/lib/api";
 import { Header } from "@/components/header";
-import { useToast } from "@/components/toast-provider";
+import { useToast } from "@/components/ui/toast-provider";
 
 interface Stats {
   totalOrders: number;

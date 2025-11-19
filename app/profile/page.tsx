@@ -5,11 +5,11 @@ import { useSelector } from "react-redux";
 import { useRouter } from 'next/navigation';
 import { RootState } from "@/lib/store";
 import { Header } from "@/components/header";
-import { useToast } from "@/components/toast-provider";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { useTranslation } from 'react-i18next';
+import { useToast } from "@/components/ui/toast-provider";
 
 export default function ProfilePage() {
   const { user } = useSelector((state: RootState) => state.auth);

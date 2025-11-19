@@ -6,8 +6,8 @@ import { useRouter } from 'next/navigation';
 import { RootState } from "@/lib/store";
 import { orderAPI } from "@/lib/api";
 import { Header } from "@/components/header";
-import { useToast } from "@/components/toast-provider";
 import { Order } from "@/lib/types";
+import { useToast } from "@/components/ui/toast-provider";
 
 export default function OrdersPage() {
   const { user } = useSelector((state: RootState) => state.auth);

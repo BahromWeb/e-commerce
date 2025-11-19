@@ -5,7 +5,8 @@ import { useParams, useRouter } from 'next/navigation';
 import { orderAPI } from "@/lib/api";
 import { Order } from "@/lib/types";
 import { Header } from "@/components/header";
-import { useToast } from "@/components/toast-provider";
+import { useToast } from "@/components/ui/toast-provider";
+
 
 export default function OrderDetailPage() {
   const { id } = useParams();

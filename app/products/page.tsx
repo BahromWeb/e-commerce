@@ -7,8 +7,9 @@ import { RootState } from "@/lib/store";
 import { productAPI } from "@/lib/api";
 import { Header } from "@/components/header";
 import { Product } from "@/lib/types";
-import ProductCard from "@/components/product-card";
-import { useToast } from "@/components/toast-provider";
+import { useToast } from "@/components/ui/toast-provider";
+import ProductCard from "@/components/ui/product-card";
+
 
 export default function ProductsPage() {
   const router = useRouter();

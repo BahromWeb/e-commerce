@@ -5,10 +5,10 @@ import { useParams, useRouter } from 'next/navigation';
 import { productAPI } from "@/lib/api";
 import { Product } from "@/lib/types";
 import { Header } from "@/components/header";
-import { useToast } from "@/components/toast-provider";
 import { useDispatch, useSelector } from "react-redux";
 import { addToCart } from "@/lib/store";
 import { RootState } from "@/lib/store";
+import { useToast } from "@/components/ui/toast-provider";
 
 export default function ProductDetailPage() {
   const { id } = useParams();

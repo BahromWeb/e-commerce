@@ -4,8 +4,8 @@ import { Product } from "@/lib/types";
 import Link from "next/link";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState, addToCart } from "@/lib/store";
-import { useToast } from "./toast-provider";
 import { useState } from "react";
+import { useToast } from "./toast-provider";
 
 export default function ProductCard({ product }: { product: Product }) {
   const dispatch = useDispatch();

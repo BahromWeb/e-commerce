@@ -1,7 +1,7 @@
 "use client";
 
 import { ReactNode, useState, useCallback } from "react";
-import Toast from "./ui/toast";
+
 
 export interface ToastMessage {
   id: string;
@@ -14,6 +14,7 @@ export const ToastContext = React.createContext<{
 } | null>(null);
 
 import React from "react";
+import Toast from "./toast";
 
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
