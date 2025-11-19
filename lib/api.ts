@@ -1,5 +1,5 @@
 import axios, { AxiosInstance, AxiosError } from "axios";
-import { ApiResponse } from "./types";
+import { ApiResponse, Product, Order, CreateProductRequest, CreateOrderRequest, PageResponse } from "./types";
 
 
 const API_BASE_URL =
@@ -56,40 +56,40 @@ export const authAPI = {
 
 // Product APIs
 export const productAPI = {
-  getAll: (page: number = 1, size: number = 10) =>
-    api.get<ApiResponse<{ products: any[]; total: number }>>(
-      `/products?page=${page}&size=${size}`
+  getAll: (page: number = 0, size: number = 10, sortBy: string = "id", sortDir: string = "asc") =>
+    api.get<ApiResponse<PageResponse<Product>>>(
+      `/products?page=${page}&size=${size}&sortBy=${sortBy}&sortDir=${sortDir}`
     ),
-  getById: (id: string) =>
-    api.get<ApiResponse<any>>(`/products/${id}`),
-  search: (name?: string, category?: string) =>
-    api.get<ApiResponse<any[]>>("/products/search", {
-      params: { name, category },
+  getById: (id: number) =>
+    api.get<ApiResponse<Product>>(`/products/${id}`),
+  search: (name?: string, category?: string, page: number = 0, size: number = 10, sortBy: string = "id", sortDir: string = "asc") =>
+    api.get<ApiResponse<PageResponse<Product>>>("/products/search", {
+      params: { name, category, page, size, sortBy, sortDir },
     }),
-  create: (data: any) =>
-    api.post<ApiResponse<any>>("/products", data),
-  update: (id: string, data: any) =>
-    api.put<ApiResponse<any>>(`/products/${id}`, data),
-  delete: (id: string) =>
-    api.delete<ApiResponse<any>>(`/products/${id}`),
+  create: (data: CreateProductRequest) =>
+    api.post<ApiResponse<Product>>("/products", data),
+  update: (id: number, data: CreateProductRequest) =>
+    api.put<ApiResponse<Product>>(`/products/${id}`, data),
+  delete: (id: number) =>
+    api.delete<ApiResponse<void>>(`/products/${id}`),
 };
 
 // Order APIs
 export const orderAPI = {
-  getAll: (page: number = 1, size: number = 10) =>
-    api.get<ApiResponse<{ orders: any[]; total: number }>>(
-      `/orders?page=${page}&size=${size}`
+  getAll: (page: number = 0, size: number = 10, sortBy: string = "orderDate", sortDir: string = "desc") =>
+    api.get<ApiResponse<PageResponse<Order>>>(
+      `/orders?page=${page}&size=${size}&sortBy=${sortBy}&sortDir=${sortDir}`
     ),
-  getById: (id: string) =>
-    api.get<ApiResponse<any>>(`/orders/${id}`),
+  getById: (id: number) =>
+    api.get<ApiResponse<Order>>(`/orders/${id}`),
   getByEmail: (email: string) =>
-    api.get<ApiResponse<any[]>>(`/orders/customer/${email}`),
-  create: (data: any) =>
-    api.post<ApiResponse<any>>("/orders", data),
-  updateStatus: (id: string, status: string) =>
-    api.put<ApiResponse<any>>(`/orders/${id}/status`, { status }),
-  cancel: (id: string) =>
-    api.delete<ApiResponse<any>>(`/orders/${id}`),
+    api.get<ApiResponse<Order[]>>(`/orders/customer/${email}`),
+  create: (data: CreateOrderRequest) =>
+    api.post<ApiResponse<Order>>("/orders", data),
+  updateStatus: (id: number, status: string) =>
+    api.put<ApiResponse<Order>>(`/orders/${id}/status`, { status }),
+  cancel: (id: number) =>
+    api.delete<ApiResponse<void>>(`/orders/${id}`),
 };
 
 export default api;

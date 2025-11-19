@@ -57,25 +57,40 @@ const cartSlice = createSlice({
           quantity: action.payload.quantity,
         });
       }
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('cart', JSON.stringify(state.items));
+      }
     },
-    removeFromCart: (state, action: PayloadAction<string>) => {
+    removeFromCart: (state, action: PayloadAction<number>) => {
       state.items = state.items.filter(
         (item) => item.productId !== action.payload
       );
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('cart', JSON.stringify(state.items));
+      }
     },
     updateQuantity: (
       state,
-      action: PayloadAction<{ productId: string; quantity: number }>
+      action: PayloadAction<{ productId: number; quantity: number }>
     ) => {
       const item = state.items.find(
         (item) => item.productId === action.payload.productId
       );
       if (item) {
         item.quantity = action.payload.quantity;
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('cart', JSON.stringify(state.items));
+        }
       }
     },
     clearCart: (state) => {
       state.items = [];
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('cart');
+      }
+    },
+    loadCart: (state, action: PayloadAction<CartItem[]>) => {
+      state.items = action.payload;
     },
   },
 });
@@ -88,7 +103,7 @@ export const store = configureStore({
 });
 
 export const { setLoading, setUser, setError, logout } = authSlice.actions;
-export const { addToCart, removeFromCart, updateQuantity, clearCart } =
+export const { addToCart, removeFromCart, updateQuantity, clearCart, loadCart } =
   cartSlice.actions;
 
 export type RootState = ReturnType<typeof store.getState>;

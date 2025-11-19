@@ -8,11 +8,14 @@ import { orderAPI } from "@/lib/api";
 import { Header } from "@/components/header";
 import { Order } from "@/lib/types";
 import { useToast } from "@/components/ui/toast-provider";
+import { useTranslation } from 'react-i18next';
+import { PuffLoader } from "react-spinners";
 
 export default function OrdersPage() {
   const { user } = useSelector((state: RootState) => state.auth);
   const router = useRouter();
   const { showToast } = useToast();
+  const { t } = useTranslation();
   const [orders, setOrders] = useState<Order[]>([]);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
@@ -24,57 +27,69 @@ export default function OrdersPage() {
       return;
     }
     fetchOrders();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, router, page]);
 
   const fetchOrders = async () => {
     try {
       setIsLoading(true);
       const response = await orderAPI.getAll(page, 10);
-      setOrders(response.data.data?.orders || []);
-      setTotal(response.data.data?.total || 0);
-    } catch (error) {
-      showToast("Failed to load orders", "error");
+      setOrders(response.data.data?.content || []);
+      setTotal(response.data.data?.totalElements || 0);
+    } catch {
+      showToast(t('orders.loadOrdersFailed'), "error");
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleStatusChange = async (orderId: string, newStatus: string) => {
+  const handleStatusChange = async (orderId: number, newStatus: string) => {
     try {
       await orderAPI.updateStatus(orderId, newStatus);
-      showToast("Order status updated", "success");
+      showToast(t('orders.statusUpdated'), "success");
       fetchOrders();
-    } catch (error) {
-      showToast("Failed to update order", "error");
+    } catch {
+      showToast(t('orders.updateFailed'), "error");
     }
   };
 
   const pageCount = Math.ceil(total / 10);
 
-  if (isLoading) return <div>Loading...</div>;
+  if (isLoading) {
+    return (
+      <>
+        <Header />
+        <main className="page-container">
+          <div className="flex justify-center items-center min-h-[50vh]">
+            <PuffLoader color="#6366f1" size={80} />
+          </div>
+        </main>
+      </>
+    );
+  }
 
   return (
     <>
       <Header />
       <main className="page-container">
-        <h1 className="section-title">All Orders</h1>
+        <h1 className="section-title">{t('orders.allOrders')}</h1>
 
         <div className="card overflow-x-auto">
           <table className="w-full">
             <thead>
               <tr className="border-b border-border bg-surface-secondary">
-                <th className="text-left p-4">Order ID</th>
-                <th className="text-left p-4">Customer</th>
-                <th className="text-left p-4">Amount</th>
-                <th className="text-left p-4">Status</th>
-                <th className="text-left p-4">Actions</th>
+                <th className="text-left p-4">{t('orders.orderId')}</th>
+                <th className="text-left p-4">{t('orders.customer')}</th>
+                <th className="text-left p-4">{t('orders.amount')}</th>
+                <th className="text-left p-4">{t('orders.status')}</th>
+                <th className="text-left p-4">{t('orders.actions')}</th>
               </tr>
             </thead>
             <tbody>
               {orders.map((order) => (
                 <tr key={order.id} className="border-b border-border hover:bg-surface-secondary">
                   <td className="p-4 font-mono text-sm">{order.id}</td>
-                  <td className="p-4">{order.email}</td>
+                  <td className="p-4">{order.customerEmail}</td>
                   <td className="p-4 font-bold">${order.totalAmount}</td>
                   <td className="p-4">
                     {order.status === "PENDING" ? (
@@ -83,14 +98,14 @@ export default function OrdersPage() {
                         onChange={(e) => handleStatusChange(order.id, e.target.value)}
                         className="input-field text-sm"
                       >
-                        <option value="PENDING">Pending</option>
-                        <option value="PROCESSING">Processing</option>
-                        <option value="COMPLETED">Completed</option>
+                        <option value="PENDING">{t('orders.pending')}</option>
+                        <option value="PROCESSING">{t('orders.processing')}</option>
+                        <option value="COMPLETED">{t('orders.completed')}</option>
                       </select>
                     ) : (
                       <span
                         className={`badge ${
-                          order.status === "COMPLETED"
+                          order.status === "DELIVERED"
                             ? "badge-success"
                             : order.status === "CANCELLED"
                             ? "badge-error"
@@ -106,7 +121,7 @@ export default function OrdersPage() {
                       onClick={() => router.push(`/orders/${order.id}`)}
                       className="btn-secondary btn-sm"
                     >
-                      View
+                      {t('orders.view')}
                     </button>
                   </td>
                 </tr>

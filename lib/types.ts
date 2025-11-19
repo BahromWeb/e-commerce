@@ -14,37 +14,57 @@ export interface AuthState {
 }
 
 export interface Product {
-  id: string;
+  id: number;
   name: string;
-  description: string;
   price: number;
   category: string;
   stock: number;
-  image?: string;
+  isActive: boolean;
   createdAt: string;
 }
 
 export interface CartItem {
-  productId: string;
+  productId: number;
   product?: Product;
   quantity: number;
 }
 
 export interface Order {
-  id: string;
-  email: string;
-  status: "PENDING" | "PROCESSING" | "COMPLETED" | "CANCELLED";
-  items: OrderItem[];
+  id: number;
+  customerName: string;
+  customerEmail: string;
+  orderDate: string;
+  status: "PENDING" | "CONFIRMED" | "SHIPPED" | "DELIVERED" | "CANCELLED";
   totalAmount: number;
-  createdAt: string;
-  updatedAt: string;
+  orderItems: OrderItem[];
 }
 
 export interface OrderItem {
-  productId: string;
+  id: number;
+  productId: number;
   productName: string;
   quantity: number;
+  unitPrice: number;
+  totalPrice: number;
+}
+
+export interface OrderItemRequest {
+  productId: number;
+  quantity: number;
+}
+
+export interface CreateOrderRequest {
+  customerName: string;
+  customerEmail: string;
+  orderItems: OrderItemRequest[];
+}
+
+export interface CreateProductRequest {
+  name: string;
   price: number;
+  stock: number;
+  category: string;
+  isActive?: boolean;
 }
 
 export interface ApiResponse<T> {
@@ -52,4 +72,16 @@ export interface ApiResponse<T> {
   data?: T;
   message?: string;
   error?: string;
+}
+
+export interface PageResponse<T> {
+  totalElements: number;
+  totalPages: number;
+  size: number;
+  content: T[];
+  number: number;
+  numberOfElements: number;
+  first: boolean;
+  last: boolean;
+  empty: boolean;
 }

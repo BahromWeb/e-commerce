@@ -13,6 +13,7 @@ import { Header } from "@/components/header";
 import { AppDispatch } from "@/lib/store";
 import { useTranslation } from 'react-i18next';
 import { useToast } from "@/components/ui/toast-provider";
+import { PuffLoader } from "react-spinners";
 
 export default function LoginPage() {
   const dispatch = useDispatch<AppDispatch>();
@@ -24,7 +25,7 @@ export default function LoginPage() {
   const loginSchema = yup.object().shape({
     username: yup
       .string()
-      .required(t('validation.required', { field: 'Username' })),
+      .required(t('validation.required', { field: t('auth.username') })),
     password: yup
       .string()
       .min(6, t('validation.passwordMin', { min: 6 }))
@@ -71,12 +72,12 @@ export default function LoginPage() {
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="form-group">
-              <label className="label">Username</label>
+              <label className="label">{t('auth.username')}</label>
               <input
                 {...register("username")}
                 type="text"
                 className="input-field"
-                placeholder="username"
+                placeholder={t('auth.username').toLowerCase()}
               />
               {errors.username && (
                 <p className="text-error text-sm mt-1">{errors.username.message}</p>
@@ -99,9 +100,9 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="btn-primary w-full"
+              className="btn-primary w-full flex items-center justify-center"
             >
-              {isLoading ? t('auth.signingIn') : t('auth.login')}
+              {isLoading ? <PuffLoader color="#ffffff" size={24} /> : t('auth.login')}
             </button>
           </form>
 

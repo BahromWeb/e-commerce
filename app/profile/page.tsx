@@ -10,6 +10,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { useTranslation } from 'react-i18next';
 import { useToast } from "@/components/ui/toast-provider";
+import { PuffLoader } from "react-spinners";
 
 export default function ProfilePage() {
   const { user } = useSelector((state: RootState) => state.auth);
@@ -67,7 +68,7 @@ export default function ProfilePage() {
           <div className="card p-8">
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               <div className="form-group">
-                <label className="label">Username</label>
+                <label className="label">{t('auth.username')}</label>
                 <input {...register("username")} type="text" className="input-field" />
                 {errors.username && (
                   <p className="text-error text-sm mt-1">{errors.username.message}</p>
@@ -109,8 +110,12 @@ export default function ProfilePage() {
                 </div>
               </div>
 
-              <button type="submit" disabled={isLoading} className="btn-primary">
-                {isLoading ? t('profile.updating') : t('profile.update')}
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="btn-primary w-full flex items-center justify-center"
+              >
+                {isLoading ? <PuffLoader color="#ffffff" size={24} /> : t('profile.update')}
               </button>
             </form>
           </div>

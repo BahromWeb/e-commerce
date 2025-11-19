@@ -4,7 +4,7 @@ import { ReactNode, useEffect } from "react";
 import { Provider } from "react-redux";
 import { store } from "@/lib/store";
 import { useDispatch } from "react-redux";
-import { setUser } from "@/lib/store";
+import { setUser, loadCart } from "@/lib/store";
 import { AppDispatch } from "@/lib/store";
 import { I18nextProvider } from 'react-i18next';
 import i18n from '@/lib/i18n';
@@ -26,6 +26,7 @@ function InitializeAuth({ children }: { children: ReactNode }) {
   const dispatch = useDispatch<AppDispatch>();
 
   useEffect(() => {
+    // Load auth from localStorage
     const token = localStorage.getItem("authToken");
     const user = localStorage.getItem("user");
     if (token && user) {
@@ -34,6 +35,16 @@ function InitializeAuth({ children }: { children: ReactNode }) {
       } catch (error) {
         localStorage.removeItem("authToken");
         localStorage.removeItem("user");
+      }
+    }
+
+    // Load cart from localStorage
+    const cart = localStorage.getItem("cart");
+    if (cart) {
+      try {
+        dispatch(loadCart(JSON.parse(cart)));
+      } catch (error) {
+        localStorage.removeItem("cart");
       }
     }
   }, [dispatch]);

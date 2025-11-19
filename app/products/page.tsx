@@ -9,60 +9,62 @@ import { Header } from "@/components/header";
 import { Product } from "@/lib/types";
 import { useToast } from "@/components/ui/toast-provider";
 import ProductCard from "@/components/ui/product-card";
+import { PuffLoader } from "react-spinners";
+import { useTranslation } from 'react-i18next';
 
 
 export default function ProductsPage() {
   const router = useRouter();
   const { user } = useSelector((state: RootState) => state.auth);
   const { showToast } = useToast();
+  const { t } = useTranslation();
   const [products, setProducts] = useState<Product[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [category, setCategory] = useState("");
-  const [page, setPage] = useState(1);
-  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    fetchProducts();
-  }, [page, searchTerm, category]);
 
   const fetchProducts = async () => {
     try {
       setIsLoading(true);
-      const response = await productAPI.getAll(page, 12);
-      setProducts(response.data.data?.products || []);
-      setTotal(response.data.data?.total || 0);
-    } catch (error) {
-      showToast("Failed to load products", "error");
+      let response;
+      if (searchTerm || category) {
+        response = await productAPI.search(searchTerm, category, page, 12);
+      } else {
+        response = await productAPI.getAll(page, 12);
+      }
+      setProducts(response.data.data?.content || []);
+      setTotalPages(response.data.data?.totalPages || 0);
+    } catch {
+      showToast(t('products.loadFailed'), "error");
     } finally {
       setIsLoading(false);
     }
   };
 
+  useEffect(() => {
+    fetchProducts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page]);
+
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      const response = await productAPI.search(searchTerm, category);
-      setProducts(response.data.data || []);
-      setPage(1);
-    } catch (error) {
-      showToast("Search failed", "error");
-    }
+    setPage(0);
+    fetchProducts();
   };
-
-  const pageCount = Math.ceil(total / 12);
 
   return (
     <>
       <Header />
       <main className="page-container">
-        <h1 className="section-title">Products</h1>
+        <h1 className="section-title">{t('products.all')}</h1>
 
         <div className="bg-surface border border-border rounded-lg p-6 mb-8">
           <form onSubmit={handleSearch} className="flex flex-col md:flex-row gap-4">
             <input
               type="text"
-              placeholder="Search products..."
+              placeholder={t('products.search')}
               className="input-field flex-1"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -72,31 +74,33 @@ export default function ProductsPage() {
               onChange={(e) => setCategory(e.target.value)}
               className="input-field md:w-40"
             >
-              <option value="">All Categories</option>
-              <option value="electronics">Electronics</option>
-              <option value="clothing">Clothing</option>
-              <option value="books">Books</option>
+              <option value="">{t('products.categories')}</option>
+              <option value="electronics">{t('products.electronics')}</option>
+              <option value="clothing">{t('products.clothing')}</option>
+              <option value="books">{t('products.books')}</option>
             </select>
             <button type="submit" className="btn-primary">
-              Search
+              {t('common.search')}
             </button>
-            {user?.role === "admin" && (
+            {user?.role?.toUpperCase() === "ADMIN" && (
               <button
                 type="button"
                 onClick={() => router.push("/products/new")}
                 className="btn-primary"
               >
-                Add Product
+                {t('products.addProduct')}
               </button>
             )}
           </form>
         </div>
 
         {isLoading ? (
-          <div className="text-center py-12">Loading...</div>
+          <div className="flex justify-center items-center py-12">
+            <PuffLoader color="#6366f1" size={80} />
+          </div>
         ) : products.length === 0 ? (
           <div className="text-center py-12 text-text-secondary">
-            No products found
+            {t('products.noProducts')}
           </div>
         ) : (
           <>
@@ -106,9 +110,9 @@ export default function ProductsPage() {
               ))}
             </div>
 
-            {pageCount > 1 && (
+            {totalPages > 1 && (
               <div className="flex justify-center gap-2">
-                {Array.from({ length: pageCount }, (_, i) => i + 1).map((p) => (
+                {Array.from({ length: totalPages }, (_, i) => i).map((p) => (
                   <button
                     key={p}
                     onClick={() => setPage(p)}
@@ -118,7 +122,7 @@ export default function ProductsPage() {
                         : "bg-surface border border-border hover:bg-surface-secondary"
                     }`}
                   >
-                    {p}
+                    {p + 1}
                   </button>
                 ))}
               </div>
