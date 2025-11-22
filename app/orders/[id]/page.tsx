@@ -8,6 +8,7 @@ import { Header } from "@/components/header";
 import { useToast } from "@/components/ui/toast-provider";
 import { PuffLoader } from "react-spinners";
 import { useTranslation } from 'react-i18next';
+import { FaLongArrowAltLeft } from "react-icons/fa";
 
 
 export default function OrderDetailPage() {
@@ -80,7 +81,7 @@ export default function OrderDetailPage() {
       <Header />
       <main className="page-container">
         <button onClick={() => router.back()} className="mb-6 text-accent hover:underline">
-          ← {t('common.back')}
+         <FaLongArrowAltLeft /> {t('common.back')}
         </button>
 
         <div className="grid md:grid-cols-3 gap-6">
