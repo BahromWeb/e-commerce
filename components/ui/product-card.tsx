@@ -53,7 +53,7 @@ export default function ProductCard({ product }: { product: Product }) {
           <button
             onClick={handleAddToCart}
             disabled={product.stock === 0}
-            className="btn-primary cursor-pointer flex-shrink-0"
+            className="btn-primary cursor-pointer shrink-0"
           >
             {t('products.addToCart')}
           </button>

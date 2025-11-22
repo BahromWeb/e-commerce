@@ -40,7 +40,7 @@ export default function LoginPage() {
     resolver: yupResolver(loginSchema),
   });
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: { username: string; password: string }) => {
     try {
       setIsLoading(true);
       const response = await authAPI.login(data.username, data.password);
@@ -54,8 +54,9 @@ export default function LoginPage() {
         showToast(t('auth.loginSuccess'), "success");
         router.push(role.toUpperCase() === "ADMIN" ? "/dashboard" : "/products");
       }
-    } catch (error: any) {
-      const message = error.response?.data?.message || t('auth.loginFailed');
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } } };
+      const message = err.response?.data?.message || t('auth.loginFailed');
       showToast(message, "error");
       dispatch(setError(message));
     } finally {

@@ -41,12 +41,12 @@ export default function ProfilePage() {
     },
   });
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async () => {
     try {
       setIsLoading(true);
       // API call would go here
       showToast(t('profile.updateSuccess'), "success");
-    } catch (error) {
+    } catch {
       showToast(t('profile.updateFailed'), "error");
     } finally {
       setIsLoading(false);

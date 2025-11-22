@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useDispatch } from "react-redux";
 import { useRouter } from 'next/navigation';
 import Link from "next/link";
 import { useForm } from "react-hook-form";
@@ -47,7 +46,7 @@ export default function RegisterPage() {
     resolver: yupResolver(registerSchema),
   });
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: { username: string; email: string; password: string }) => {
     try {
       setIsLoading(true);
       const response = await authAPI.register(
@@ -65,8 +64,9 @@ export default function RegisterPage() {
         showToast(t('auth.registrationSuccess'), "success");
         router.push("/products");
       }
-    } catch (error: any) {
-      const message = error.response?.data?.message || t('auth.registrationFailed');
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } } };
+      const message = err.response?.data?.message || t('auth.registrationFailed');
       showToast(message, "error");
     } finally {
       setIsLoading(false);

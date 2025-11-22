@@ -37,6 +37,7 @@ export default function DashboardPage() {
       return;
     }
     fetchStats();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, router]);
 
   const fetchStats = async () => {

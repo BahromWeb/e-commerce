@@ -32,7 +32,7 @@ function InitializeAuth({ children }: { children: ReactNode }) {
     if (token && user) {
       try {
         dispatch(setUser({ user: JSON.parse(user), token }));
-      } catch (error) {
+      } catch {
         localStorage.removeItem("authToken");
         localStorage.removeItem("user");
       }
@@ -43,7 +43,7 @@ function InitializeAuth({ children }: { children: ReactNode }) {
     if (cart) {
       try {
         dispatch(loadCart(JSON.parse(cart)));
-      } catch (error) {
+      } catch {
         localStorage.removeItem("cart");
       }
     }
