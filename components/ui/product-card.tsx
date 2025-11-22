@@ -48,12 +48,12 @@ export default function ProductCard({ product }: { product: Product }) {
             max={product.stock}
             value={quantity}
             onChange={(e) => setQuantity(Math.min(product.stock, Math.max(1, parseInt(e.target.value) || 1)))}
-            className="input-field flex-1"
+            className="input-field shrink-0 w-20"
           />
           <button
             onClick={handleAddToCart}
             disabled={product.stock === 0}
-            className="btn-primary cursor-pointer shrink-0"
+            className="btn-primary flex-1"
           >
             {t('products.addToCart')}
           </button>
