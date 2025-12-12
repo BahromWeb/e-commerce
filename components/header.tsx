@@ -16,16 +16,16 @@ export function Header() {
     <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
         <Link href="/" className="font-semibold text-xl text-gray-900 hover:text-gray-700 transition-colors">
-          Mini Marketplace
+          Mini Bozor
         </Link>
 
         <div className="hidden md:flex items-center gap-8">
           <Link href="/" className="text-gray-600 hover:text-gray-900 transition-colors">
-            Products
+            Mahsulotlar
           </Link>
           <Link href="/cart" className="relative flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors">
             <FiShoppingCart className="text-lg" />
-            <span>Cart</span>
+            <span>Savat</span>
             {cartItemsCount > 0 && (
               <span className="absolute -top-1 -right-2 bg-blue-600 text-white text-xs font-medium rounded-full w-5 h-5 flex items-center justify-center">
                 {cartItemsCount}
@@ -45,11 +45,11 @@ export function Header() {
       {mobileMenuOpen && (
         <div className="md:hidden bg-white border-t border-gray-200 px-4 py-3">
           <Link href="/" className="block py-2 text-gray-600 hover:text-gray-900" onClick={() => setMobileMenuOpen(false)}>
-            Products
+            Mahsulotlar
           </Link>
           <Link href="/cart" className="flex items-center gap-2 py-2 text-gray-600 hover:text-gray-900" onClick={() => setMobileMenuOpen(false)}>
             <FiShoppingCart />
-            <span>Cart</span>
+            <span>Savat</span>
             {cartItemsCount > 0 && <span className="ml-auto text-sm text-gray-500">({cartItemsCount})</span>}
           </Link>
         </div>

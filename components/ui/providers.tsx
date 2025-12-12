@@ -6,9 +6,16 @@ import { store } from "@/lib/store";
 import { useDispatch } from "react-redux";
 import { loadCart } from "@/lib/store";
 import { AppDispatch } from "@/lib/store";
-import { ConfigProvider } from 'antd';
+import { ConfigProvider, message } from 'antd';
 
 function ClientProviders({ children }: { children: ReactNode }) {
+  // Configure message globally for React 18
+  message.config({
+    top: 100,
+    duration: 3,
+    maxCount: 3,
+  });
+
   return (
     <Provider store={store}>
       <ConfigProvider

@@ -23,7 +23,7 @@ export default function CartPage() {
   const handleUpdateQuantity = (productId: number, quantity: number) => {
     if (quantity < 1) return;
     if (quantity > 99) {
-      messageApi.warning('Maximum quantity is 99');
+      messageApi.warning('Maksimal miqdor 99 ta');
       return;
     }
     dispatch(updateQuantity({ productId, quantity }));
@@ -31,13 +31,13 @@ export default function CartPage() {
 
   const handleRemoveItem = (productId: number) => {
     dispatch(removeFromCart(productId));
-    messageApi.success('Item removed from cart');
+    messageApi.success('Mahsulot savatchadan olib tashlandi');
   };
 
   const handleClearCart = () => {
-    if (window.confirm("Are you sure you want to clear your cart?")) {
+    if (window.confirm("Savatchani tozalashni xohlaysizmi?")) {
       dispatch(clearCart());
-      messageApi.success('Cart cleared successfully');
+      messageApi.success('Savat muvaffaqiyatli tozalandi');
     }
   };
 
@@ -46,18 +46,18 @@ export default function CartPage() {
       <Header />
       <main className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-2xl font-semibold text-gray-900 mb-6">Shopping Cart</h1>
+          <h1 className="text-2xl font-semibold text-gray-900 mb-6">Xarid Savati</h1>
 
           {items.length === 0 ? (
             <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
               <FiShoppingCart className="text-6xl text-gray-300 mx-auto mb-4" />
-              <h2 className="text-xl font-medium mb-2 text-gray-900">Your cart is empty</h2>
-              <p className="text-gray-600 mb-6">Add products to get started</p>
+              <h2 className="text-xl font-medium mb-2 text-gray-900">Savatingiz bo'sh</h2>
+              <p className="text-gray-600 mb-6">Boshlash uchun mahsulot qo'shing</p>
               <button
                 onClick={() => router.push("/")}
                 className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded transition-colors"
               >
-                Continue Shopping
+                Xaridni Davom Ettirish
               </button>
             </div>
           ) : (
@@ -105,7 +105,7 @@ export default function CartPage() {
                           onClick={() => handleRemoveItem(item.productId)}
                           className="text-red-600 hover:text-red-700 text-sm font-medium flex items-center gap-1"
                         >
-                          <FiTrash2 /> Remove
+                          <FiTrash2 /> O'chirish
                         </button>
                         <p className="font-semibold text-base text-gray-900">
                           ${(item.product.price * item.quantity).toFixed(2)}
@@ -119,19 +119,19 @@ export default function CartPage() {
               {/* Cart Summary */}
               <div className="lg:col-span-1">
                 <div className="bg-white rounded-lg border border-gray-200 p-6 sticky top-24">
-                  <h2 className="text-lg font-semibold mb-6 text-gray-900">Order Summary</h2>
+                  <h2 className="text-lg font-semibold mb-6 text-gray-900">Buyurtma Xulasasi</h2>
                   <div className="space-y-3 mb-6">
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Total Items:</span>
+                      <span className="text-gray-600">Jami Mahsulotlar:</span>
                       <span className="font-medium text-gray-900">{totalItems}</span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Products:</span>
+                      <span className="text-gray-600">Mahsulotlar:</span>
                       <span className="font-medium text-gray-900">{items.length}</span>
                     </div>
                     <hr className="border-gray-200" />
                     <div className="flex justify-between">
-                      <span className="font-semibold text-gray-900">Total:</span>
+                      <span className="font-semibold text-gray-900">Jami:</span>
                       <span className="text-xl font-semibold text-gray-900">${totalPrice.toFixed(2)}</span>
                     </div>
                   </div>
@@ -139,13 +139,13 @@ export default function CartPage() {
                     onClick={() => router.push("/")}
                     className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded transition-colors mb-3"
                   >
-                    Continue Shopping
+                    Xaridni Davom Ettirish
                   </button>
                   <button
                     onClick={handleClearCart}
                     className="w-full bg-red-600 hover:bg-red-700 text-white font-medium py-3 px-4 rounded transition-colors"
                   >
-                    Clear Cart
+                    Savatni Tozalash
                   </button>
                 </div>
               </div>

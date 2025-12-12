@@ -27,7 +27,7 @@ export default function Home() {
         setProducts(productsRes.data);
         setLoading(false);
       } catch (err) {
-        setError("Failed to load products. Please try again later.");
+        setError("Mahsulotlarni yuklashda xatolik. Iltimos, keyinroq qayta urinib ko'ring.");
         setLoading(false);
       }
     };
@@ -69,10 +69,10 @@ export default function Home() {
         <div className="bg-white border-b border-gray-200 py-12">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <h1 className="text-3xl font-semibold text-gray-900 mb-2">
-              Products
+              Mahsulotlar
             </h1>
             <p className="text-gray-600">
-              Browse our collection of quality products
+              Sifatli mahsulotlar to'plamimizni ko'rib chiqing
             </p>
           </div>
         </div>
@@ -80,7 +80,7 @@ export default function Home() {
         {/* Category Filter & Products */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
-            <h2 className="text-lg font-medium text-gray-900 mb-4">Categories</h2>
+            <h2 className="text-lg font-medium text-gray-900 mb-4">Kategoriyalar</h2>
             <div className="flex flex-wrap gap-3">
               <button
                 onClick={() => setSelectedCategory("all")}
@@ -90,7 +90,7 @@ export default function Home() {
                     : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                 }`}
               >
-                All
+                Barchasi
               </button>
               {categories.map((category) => (
                 <button
@@ -111,7 +111,7 @@ export default function Home() {
           {/* Products Grid */}
           <div className="mb-6">
             <h2 className="text-xl font-medium text-gray-900">
-              {selectedCategory === "all" ? "All Products" : selectedCategory.charAt(0).toUpperCase() + selectedCategory.slice(1)}
+              {selectedCategory === "all" ? "Barcha Mahsulotlar" : selectedCategory.charAt(0).toUpperCase() + selectedCategory.slice(1)}
               <span className="text-gray-500 ml-2 text-base font-normal">({filteredProducts.length})</span>
             </h2>
           </div>

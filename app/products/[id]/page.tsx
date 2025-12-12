@@ -31,7 +31,7 @@ export default function ProductDetailPage() {
       const response = await productAPI.getById(Number(id));
       setProduct(response.data || null);
     } catch {
-      messageApi.error('Failed to load product');
+      messageApi.error('Mahsulotni yuklashda xatolik');
       router.push("/");
     } finally {
       setIsLoading(false);
@@ -55,12 +55,12 @@ export default function ProductDetailPage() {
         <Header />
         <div className="min-h-screen bg-gray-50 py-12">
           <div className="max-w-7xl mx-auto px-4 text-center">
-            <h2 className="text-2xl font-semibold mb-6 text-gray-900">Product Not Found</h2>
+            <h2 className="text-2xl font-semibold mb-6 text-gray-900">Mahsulot Topilmadi</h2>
             <button 
               onClick={() => router.push("/")} 
               className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded transition-colors"
             >
-              Back to Products
+              Mahsulotlarga Qaytish
             </button>
           </div>
         </div>
@@ -70,7 +70,7 @@ export default function ProductDetailPage() {
 
   const handleAddToCart = () => {
     dispatch(addToCart({ product, quantity }));
-    message.success(`Added ${quantity} item(s) to cart`);
+    message.success(`${quantity} ta mahsulot savatchaga qo'shildi`);
   };
 
   return (
@@ -83,7 +83,7 @@ export default function ProductDetailPage() {
             className="mb-6 flex items-center gap-2 text-gray-600 hover:text-gray-900 font-medium transition-colors"
           >
             <FiArrowLeft />
-            Back
+            Orqaga
           </button>
 
           <div className="grid md:grid-cols-2 gap-8 bg-white rounded-lg border border-gray-200 p-6 lg:p-8">
@@ -109,20 +109,20 @@ export default function ProductDetailPage() {
                 </span>
                 <span className="flex items-center gap-1 text-sm text-gray-600">
                   <FiStar className="text-yellow-500" />
-                  {product.rating.rate} ({product.rating.count} reviews)
+                  {product.rating.rate} ({product.rating.count} ta sharh)
                 </span>
               </div>
 
               <div className="mb-8">
                 <h3 className="text-base font-medium mb-2 text-gray-900">
-                  Description
+                  Ta'rif
                 </h3>
                 <p className="text-gray-600 leading-relaxed">{product.description}</p>
               </div>
 
               <div className="mt-auto space-y-4">
                 <div>
-                  <label className="block text-gray-700 font-medium mb-2">Quantity</label>
+                  <label className="block text-gray-700 font-medium mb-2">Miqdori</label>
                   <input
                     type="number"
                     min="1"
@@ -139,13 +139,13 @@ export default function ProductDetailPage() {
                   className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded transition-colors flex items-center justify-center gap-2"
                 >
                   <FiShoppingCart />
-                  Add to Cart
+                  Savatga Qo'shish
                 </button>
                 <button 
                   onClick={() => router.push("/")} 
                   className="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-3 px-6 rounded transition-colors"
                 >
-                  Continue Shopping
+                  Xaridni Davom Ettirish
                 </button>
               </div>
             </div>

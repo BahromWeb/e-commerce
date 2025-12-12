@@ -15,7 +15,7 @@ export default function ProductCard({ product }: { product: Product }) {
 
   const handleAddToCart = () => {
     dispatch(addToCart({ product, quantity }));
-    message.success(`Added ${quantity} item(s) to cart`);
+    message.success(`${quantity} ta mahsulot savatchaga qo'shildi`);
     setQuantity(1);
   };
 
@@ -60,14 +60,14 @@ export default function ProductCard({ product }: { product: Product }) {
             className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded transition-colors flex items-center justify-center gap-2"
           >
             <FiShoppingCart />
-            Add
+            Qo'shish
           </button>
         </div>
         <Link
           href={`/products/${product.id}`}
           className="block text-center text-blue-600 hover:text-blue-700 text-sm font-medium"
         >
-          View Details
+          Batafsil Ko'rish
         </Link>
       </div>
     </div>

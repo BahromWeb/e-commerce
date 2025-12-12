@@ -7,8 +7,8 @@ import { Providers } from "@/components/ui/providers";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Mini Marketplace - Shop Amazing Products",
-  description: "Discover amazing products at great prices. Browse, add to cart, and manage your shopping easily.",
+  title: "Mini Bozor - Ajoyib Mahsulotlar Do'koni",
+  description: "Ajoyib mahsulotlarni qulay narxlarda kashf eting. Ko'rib chiqing, savatchaga qo'shing va xaridlaringizni oson boshqaring.",
 };
 
 export default function RootLayout({
@@ -17,7 +17,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="uz">
       <body className={`${inter.className} bg-background text-foreground`}>
         <Providers>{children}</Providers>
       </body>
