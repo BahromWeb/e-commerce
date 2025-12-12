@@ -4,18 +4,22 @@ import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useRouter } from 'next/navigation';
 import { RootState } from "@/lib/store";
-import { orderAPI, productAPI } from "@/lib/api";
+import { cartAPI, productAPI } from "@/lib/api";
 import { Header } from "@/components/header";
 import { useToast } from "@/components/ui/toast-provider";
 import { useTranslation } from 'react-i18next';
-import { Order } from "@/lib/types";
+import { Cart, Product } from "@/lib/types";
 import { PuffLoader } from "react-spinners";
+
+interface OrderWithTotal extends Cart {
+  totalAmount: number;
+}
 
 interface Stats {
   totalOrders: number;
   totalProducts: number;
   totalRevenue: number;
-  recentOrders: Order[];
+  recentOrders: OrderWithTotal[];
 }
 
 export default function DashboardPage() {
@@ -43,21 +47,35 @@ export default function DashboardPage() {
   const fetchStats = async () => {
     try {
       setIsLoading(true);
-      const [ordersRes, productsRes] = await Promise.all([
-        orderAPI.getAll(0, 100),
-        productAPI.getAll(0, 100),
+      const [cartsRes, productsRes] = await Promise.all([
+        cartAPI.getAll(),
+        productAPI.getAll(),
       ]);
 
-      const orders = ordersRes.data.data?.content || [];
-      const products = productsRes.data.data?.content || [];
+      const carts = cartsRes.data || [];
+      const products = productsRes.data || [];
 
-      const totalRevenue = orders.reduce((sum: number, order: Order) => sum + order.totalAmount, 0);
+      // Create a map of product prices
+      const productPriceMap = products.reduce((map: Record<number, number>, product: Product) => {
+        map[product.id] = product.price;
+        return map;
+      }, {});
+
+      // Calculate total amount for each cart
+      const ordersWithTotals = carts.map((cart) => {
+        const totalAmount = cart.products.reduce((sum, item) => {
+          return sum + (productPriceMap[item.productId] || 0) * item.quantity;
+        }, 0);
+        return { ...cart, totalAmount };
+      });
+
+      const totalRevenue = ordersWithTotals.reduce((sum, order) => sum + order.totalAmount, 0);
 
       setStats({
-        totalOrders: orders.length,
+        totalOrders: carts.length,
         totalProducts: products.length,
         totalRevenue,
-        recentOrders: orders.slice(0, 5),
+        recentOrders: ordersWithTotals.slice(0, 5),
       });
     } catch {
       showToast(t('dashboard.loadFailed'), "error");
@@ -109,27 +127,17 @@ export default function DashboardPage() {
                   <th className="text-left py-2">{t('dashboard.orderId')}</th>
                   <th className="text-left py-2">{t('dashboard.customer')}</th>
                   <th className="text-left py-2">{t('dashboard.amount')}</th>
-                  <th className="text-left py-2">{t('dashboard.status')}</th>
+                  <th className="text-left py-2">{t('orders.date')}</th>
                 </tr>
               </thead>
               <tbody>
                 {stats.recentOrders.map((order) => (
                   <tr key={order.id} className="border-b border-border hover:bg-surface-secondary">
                     <td className="py-3">{order.id}</td>
-                    <td className="py-3">{order.customerEmail}</td>
+                    <td className="py-3">User #{order.userId}</td>
                     <td className="py-3">${order.totalAmount.toFixed(2)}</td>
-                    <td className="py-3">
-                      <span
-                        className={`badge ${
-                          order.status === "DELIVERED"
-                            ? "badge-success"
-                            : order.status === "CANCELLED"
-                            ? "badge-error"
-                            : "badge-warning"
-                        }`}
-                      >
-                        {order.status}
-                      </span>
+                    <td className="py-3 text-text-secondary">
+                      {new Date(order.date).toLocaleDateString()}
                     </td>
                   </tr>
                 ))}

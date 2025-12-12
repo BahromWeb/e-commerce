@@ -45,14 +45,19 @@ export default function LoginPage() {
       setIsLoading(true);
       const response = await authAPI.login(data.username, data.password);
       
-      if (response.data.data) {
-        const { token, username, email, role } = response.data.data;
-        const user = { username, email, role };
+      if (response.data.token) {
+        const token = response.data.token;
+        // Fake Store API doesn't return user info, so we create a mock user
+        const user = { 
+          username: data.username, 
+          email: `${data.username}@example.com`, 
+          role: data.username === "admin" ? "ADMIN" : "USER" 
+        };
         localStorage.setItem("authToken", token);
         localStorage.setItem("user", JSON.stringify(user));
         dispatch(setUser({ user, token }));
         showToast(t('auth.loginSuccess'), "success");
-        router.push(role.toUpperCase() === "ADMIN" ? "/dashboard" : "/products");
+        router.push(user.role === "ADMIN" ? "/dashboard" : "/products");
       }
     } catch (error: unknown) {
       const err = error as { response?: { data?: { message?: string } } };

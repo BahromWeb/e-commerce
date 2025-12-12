@@ -2,21 +2,32 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from 'next/navigation';
-import { orderAPI } from "@/lib/api";
-import { Order } from "@/lib/types";
+import { cartAPI, productAPI } from "@/lib/api";
+import { Cart, Product } from "@/lib/types";
 import { Header } from "@/components/header";
 import { useToast } from "@/components/ui/toast-provider";
 import { PuffLoader } from "react-spinners";
 import { useTranslation } from 'react-i18next';
 import { FaLongArrowAltLeft } from "react-icons/fa";
+import Image from "next/image";
 
+interface CartProduct {
+  productId: number;
+  quantity: number;
+  product?: Product;
+}
+
+interface OrderWithProducts extends Omit<Cart, 'products'> {
+  products: CartProduct[];
+  totalAmount?: number;
+}
 
 export default function OrderDetailPage() {
   const { id } = useParams();
   const router = useRouter();
   const { showToast } = useToast();
   const { t } = useTranslation();
-  const [order, setOrder] = useState<Order | null>(null);
+  const [order, setOrder] = useState<OrderWithProducts | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -27,24 +38,31 @@ export default function OrderDetailPage() {
   const fetchOrder = async () => {
     try {
       setIsLoading(true);
-      const response = await orderAPI.getById(Number(id));
-      setOrder(response.data.data || null);
+      const response = await cartAPI.getById(Number(id));
+      const cart = response.data;
+      
+      if (cart) {
+        // Fetch product details for each cart item
+        const productsWithDetails: CartProduct[] = await Promise.all(
+          cart.products.map(async (item) => {
+            try {
+              const productResponse = await productAPI.getById(item.productId);
+              return { ...item, product: productResponse.data };
+            } catch {
+              return { productId: item.productId, quantity: item.quantity };
+            }
+          })
+        );
+        const totalAmount = productsWithDetails.reduce((sum, item) => {
+          return sum + (item.product?.price || 0) * item.quantity;
+        }, 0);
+        setOrder({ ...cart, products: productsWithDetails, totalAmount });
+      }
     } catch {
       showToast(t('orders.loadOrderFailed'), "error");
       router.push("/orders");
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const handleCancel = async () => {
-    if (!confirm(t('orders.confirmCancel'))) return;
-    try {
-      await orderAPI.cancel(Number(id));
-      showToast(t('orders.cancelSuccess'), "success");
-      fetchOrder();
-    } catch {
-      showToast(t('orders.cancelFailed'), "error");
     }
   };
 
@@ -80,8 +98,8 @@ export default function OrderDetailPage() {
     <>
       <Header />
       <main className="page-container">
-        <button onClick={() => router.back()} className="mb-6 text-accent hover:underline">
-         <FaLongArrowAltLeft /> {t('common.back')}
+        <button onClick={() => router.back()} className="mb-6 text-accent hover:underline flex items-center gap-2">
+          <FaLongArrowAltLeft /> {t('common.back')}
         </button>
 
         <div className="grid md:grid-cols-3 gap-6">
@@ -90,39 +108,39 @@ export default function OrderDetailPage() {
               <h1 className="text-2xl font-bold mb-4">{t('orders.id')} #{order.id}</h1>
               <div className="grid md:grid-cols-2 gap-4 mb-6">
                 <div>
-                  <p className="text-text-secondary text-sm">{t('orders.customerName')}</p>
-                  <p className="font-medium">{order.customerName}</p>
-                </div>
-                <div>
-                  <p className="text-text-secondary text-sm">{t('orders.customerEmail')}</p>
-                  <p className="font-medium">{order.customerEmail}</p>
+                  <p className="text-text-secondary text-sm">{t('orders.customer')}</p>
+                  <p className="font-medium">User #{order.userId}</p>
                 </div>
                 <div>
                   <p className="text-text-secondary text-sm">{t('orders.orderDate')}</p>
-                  <p className="font-medium">{new Date(order.orderDate).toLocaleDateString()}</p>
+                  <p className="font-medium">{new Date(order.date).toLocaleDateString()}</p>
                 </div>
                 <div>
                   <p className="text-text-secondary text-sm">{t('orders.status')}</p>
-                  <span
-                    className={`badge ${
-                      order.status === "DELIVERED"
-                        ? "badge-success"
-                        : order.status === "CANCELLED"
-                        ? "badge-error"
-                        : "badge-warning"
-                    }`}
-                  >
-                    {order.status}
-                  </span>
+                  <span className="badge badge-success">DELIVERED</span>
                 </div>
               </div>
 
               <h2 className="text-xl font-bold mb-4">{t('orders.orderItems')}</h2>
-              <div className="space-y-2 mb-4">
-                {order.orderItems.map((item) => (
-                  <div key={item.id} className="flex justify-between py-2 border-b border-border">
-                    <span>{item.productName} x {item.quantity}</span>
-                    <span className="font-bold">${item.totalPrice.toFixed(2)}</span>
+              <div className="space-y-4 mb-4">
+                {order.products.map((item, index) => (
+                  <div key={index} className="flex items-center gap-4 py-3 border-b border-border">
+                    {item.product?.image && (
+                      <Image
+                        src={item.product.image}
+                        alt={item.product.title || 'Product'}
+                        width={60}
+                        height={60}
+                        className="object-contain rounded"
+                      />
+                    )}
+                    <div className="flex-1">
+                      <p className="font-medium">{item.product?.title || `Product #${item.productId}`}</p>
+                      <p className="text-sm text-text-secondary">Qty: {item.quantity}</p>
+                    </div>
+                    <span className="font-bold">
+                      ${((item.product?.price || 0) * item.quantity).toFixed(2)}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -134,19 +152,17 @@ export default function OrderDetailPage() {
             <div className="space-y-3">
               <div className="flex justify-between">
                 <span>{t('orders.totalAmount')}</span>
-                <span className="font-bold text-lg text-accent">${order.totalAmount.toFixed(2)}</span>
+                <span className="font-bold text-lg text-accent">${order.totalAmount?.toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-sm text-text-secondary">
                 <span>{t('orders.orderDate')}</span>
-                <span>{new Date(order.orderDate).toLocaleDateString()}</span>
+                <span>{new Date(order.date).toLocaleDateString()}</span>
+              </div>
+              <div className="flex justify-between text-sm text-text-secondary">
+                <span>{t('orders.items')}</span>
+                <span>{order.products.length} items</span>
               </div>
             </div>
-
-            {order.status !== "CANCELLED" && order.status !== "DELIVERED" && (
-              <button onClick={handleCancel} className="btn-danger w-full mt-6">
-                {t('orders.cancelOrder')}
-              </button>
-            )}
           </div>
         </div>
       </main>

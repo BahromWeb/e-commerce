@@ -19,28 +19,33 @@ export default function ProductsPage() {
   const { showToast } = useToast();
   const { t } = useTranslation();
   const [products, setProducts] = useState<Product[]>([]);
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [category, setCategory] = useState("");
-  const [page, setPage] = useState(0);
-  const [totalPages, setTotalPages] = useState(0);
+  const [categories, setCategories] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchProducts = async () => {
     try {
       setIsLoading(true);
       let response;
-      if (searchTerm || category) {
-        response = await productAPI.search(
-          searchTerm || undefined, 
-          category || undefined, 
-          page, 
-          12
-        );
+      if (category) {
+        response = await productAPI.getByCategory(category);
       } else {
-        response = await productAPI.getAll(page, 12);
+        response = await productAPI.getAll();
       }
-      setProducts(response.data.data?.content || []);
-      setTotalPages(response.data.data?.totalPages || 0);
+      const productsData = response.data;
+      setAllProducts(productsData);
+      
+      // Filter by search term on client side
+      if (searchTerm) {
+        const filtered = productsData.filter(p => 
+          p.title.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+        setProducts(filtered);
+      } else {
+        setProducts(productsData);
+      }
     } catch {
       showToast(t('products.loadFailed'), "error");
     } finally {
@@ -48,17 +53,30 @@ export default function ProductsPage() {
     }
   };
 
+  const fetchCategories = async () => {
+    try {
+      const response = await productAPI.getCategories();
+      setCategories(response.data);
+    } catch {
+      console.error("Failed to load categories");
+    }
+  };
+
   useEffect(() => {
     fetchProducts();
+    fetchCategories();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page]);
+  }, [category]);
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (page === 0) {
-      fetchProducts();
+    if (searchTerm) {
+      const filtered = allProducts.filter(p => 
+        p.title.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      setProducts(filtered);
     } else {
-      setPage(0);
+      setProducts(allProducts);
     }
   };
 
@@ -81,13 +99,15 @@ export default function ProductsPage() {
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              className="input-field md:w-40"
+              className="input-field md:w-48"
               suppressHydrationWarning
             >
               <option value="" suppressHydrationWarning>{t('products.categories')}</option>
-              <option value="electronics" suppressHydrationWarning>{t('products.electronics')}</option>
-              <option value="clothing" suppressHydrationWarning>{t('products.clothing')}</option>
-              <option value="books" suppressHydrationWarning>{t('products.books')}</option>
+              {categories.map((cat) => (
+                <option key={cat} value={cat} suppressHydrationWarning>
+                  {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                </option>
+              ))}
             </select>
             <button type="submit" className="btn-primary" suppressHydrationWarning>
               {t('common.search')}
@@ -114,31 +134,11 @@ export default function ProductsPage() {
             {t('products.noProducts')}
           </div>
         ) : (
-          <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-              {products.map((product) => (
-                <ProductCard key={product.id} product={product} />
-              ))}
-            </div>
-
-            {totalPages > 1 && (
-              <div className="flex justify-center gap-2">
-                {Array.from({ length: totalPages }, (_, i) => i).map((p) => (
-                  <button
-                    key={p}
-                    onClick={() => setPage(p)}
-                    className={`px-3 py-2 rounded-lg ${
-                      page === p
-                        ? "bg-accent text-white"
-                        : "bg-surface border border-border hover:bg-surface-secondary"
-                    }`}
-                  >
-                    {p + 1}
-                  </button>
-                ))}
-              </div>
-            )}
-          </>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
+            {products.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
         )}
       </main>
     </>

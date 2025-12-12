@@ -4,21 +4,30 @@ import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useRouter } from 'next/navigation';
 import { RootState } from "@/lib/store";
-import { orderAPI } from "@/lib/api";
+import { cartAPI, productAPI } from "@/lib/api";
 import { Header } from "@/components/header";
-import { Order } from "@/lib/types";
+import { Cart, Product } from "@/lib/types";
 import { useToast } from "@/components/ui/toast-provider";
 import { useTranslation } from 'react-i18next';
 import { PuffLoader } from "react-spinners";
+
+interface CartProduct {
+  productId: number;
+  quantity: number;
+  product?: Product;
+}
+
+interface OrderWithProducts extends Omit<Cart, 'products'> {
+  products: CartProduct[];
+  totalAmount?: number;
+}
 
 export default function OrdersPage() {
   const { user } = useSelector((state: RootState) => state.auth);
   const router = useRouter();
   const { showToast } = useToast();
   const { t } = useTranslation();
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [page, setPage] = useState(1);
-  const [total, setTotal] = useState(0);
+  const [orders, setOrders] = useState<OrderWithProducts[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -28,32 +37,42 @@ export default function OrdersPage() {
     }
     fetchOrders();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, router, page]);
+  }, [user, router]);
 
   const fetchOrders = async () => {
     try {
       setIsLoading(true);
-      const response = await orderAPI.getAll(page, 10);
-      setOrders(response.data.data?.content || []);
-      setTotal(response.data.data?.totalElements || 0);
+      // Get all carts (Fake Store API)
+      const response = await cartAPI.getAll();
+      const carts = response.data || [];
+      
+      // Fetch product details for each cart item
+      const ordersWithProducts: OrderWithProducts[] = await Promise.all(
+        carts.map(async (cart) => {
+          const productsWithDetails: CartProduct[] = await Promise.all(
+            cart.products.map(async (item) => {
+              try {
+                const productResponse = await productAPI.getById(item.productId);
+                return { ...item, product: productResponse.data };
+              } catch {
+                return { productId: item.productId, quantity: item.quantity };
+              }
+            })
+          );
+          const totalAmount = productsWithDetails.reduce((sum, item) => {
+            return sum + (item.product?.price || 0) * item.quantity;
+          }, 0);
+          return { ...cart, products: productsWithDetails, totalAmount };
+        })
+      );
+      
+      setOrders(ordersWithProducts);
     } catch {
       showToast(t('orders.loadOrdersFailed'), "error");
     } finally {
       setIsLoading(false);
     }
   };
-
-  const handleStatusChange = async (orderId: number, newStatus: string) => {
-    try {
-      await orderAPI.updateStatus(orderId, newStatus);
-      showToast(t('orders.statusUpdated'), "success");
-      fetchOrders();
-    } catch {
-      showToast(t('orders.updateFailed'), "error");
-    }
-  };
-
-  const pageCount = Math.ceil(total / 10);
 
   if (isLoading) {
     return (
@@ -80,8 +99,9 @@ export default function OrdersPage() {
               <tr className="border-b border-border bg-surface-secondary">
                 <th className="text-left p-4">{t('orders.orderId')}</th>
                 <th className="text-left p-4">{t('orders.customer')}</th>
+                <th className="text-left p-4">{t('orders.items')}</th>
                 <th className="text-left p-4">{t('orders.amount')}</th>
-                <th className="text-left p-4">{t('orders.status')}</th>
+                <th className="text-left p-4">{t('orders.date')}</th>
                 <th className="text-left p-4">{t('orders.actions')}</th>
               </tr>
             </thead>
@@ -89,32 +109,11 @@ export default function OrdersPage() {
               {orders.map((order) => (
                 <tr key={order.id} className="border-b border-border hover:bg-surface-secondary">
                   <td className="p-4 font-mono text-sm">{order.id}</td>
-                  <td className="p-4">{order.customerEmail}</td>
-                  <td className="p-4 font-bold">${order.totalAmount}</td>
-                  <td className="p-4">
-                    {order.status === "PENDING" ? (
-                      <select
-                        value={order.status}
-                        onChange={(e) => handleStatusChange(order.id, e.target.value)}
-                        className="input-field text-sm"
-                      >
-                        <option value="PENDING">{t('orders.pending')}</option>
-                        <option value="PROCESSING">{t('orders.processing')}</option>
-                        <option value="COMPLETED">{t('orders.completed')}</option>
-                      </select>
-                    ) : (
-                      <span
-                        className={`badge ${
-                          order.status === "DELIVERED"
-                            ? "badge-success"
-                            : order.status === "CANCELLED"
-                            ? "badge-error"
-                            : "badge-warning"
-                        }`}
-                      >
-                        {order.status}
-                      </span>
-                    )}
+                  <td className="p-4">User #{order.userId}</td>
+                  <td className="p-4">{order.products.length} items</td>
+                  <td className="p-4 font-bold">${order.totalAmount?.toFixed(2)}</td>
+                  <td className="p-4 text-sm text-text-secondary">
+                    {new Date(order.date).toLocaleDateString()}
                   </td>
                   <td className="p-4">
                     <button
@@ -129,24 +128,6 @@ export default function OrdersPage() {
             </tbody>
           </table>
         </div>
-
-        {pageCount > 1 && (
-          <div className="flex justify-center gap-2 mt-6">
-            {Array.from({ length: pageCount }, (_, i) => i + 1).map((p) => (
-              <button
-                key={p}
-                onClick={() => setPage(p)}
-                className={`px-3 py-2 rounded-lg ${
-                  page === p
-                    ? "bg-accent text-white"
-                    : "bg-surface border border-border hover:bg-surface-secondary"
-                }`}
-              >
-                {p}
-              </button>
-            ))}
-          </div>
-        )}
       </main>
     </>
   );

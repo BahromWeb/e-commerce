@@ -1,16 +1,12 @@
-import axios, { AxiosInstance, AxiosError } from "axios";
-import { ApiResponse, Product, Order, CreateProductRequest, CreateOrderRequest, PageResponse } from "./types";
+import axios, { AxiosInstance } from "axios";
+import { Product, User, Cart, CreateProductRequest, CreateCartRequest } from "./types";
 
-
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL ||
-  "https://api-e-commerce.tenzorsoft.uz";
+const API_BASE_URL = "https://fakestoreapi.com";
 
 const api: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     "Content-Type": "application/json",
-    "Accept-Language": "uz",
   },
 });
 
@@ -26,70 +22,65 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Response interceptor
-api.interceptors.response.use(
-  (response) => response,
-  (error: AxiosError) => {
-    if (error.response?.status === 401) {
-      localStorage.removeItem("authToken");
-      localStorage.removeItem("user");
-      window.location.href = "/login";
-    }
-    return Promise.reject(error);
-  }
-);
-
 // Auth APIs
 export const authAPI = {
+  login: (username: string, password: string) =>
+    api.post<{ token: string }>("/auth/login", {
+      username,
+      password,
+    }),
+  // Fake Store API doesn't have register, so we simulate it
   register: (username: string, email: string, password: string) =>
-    api.post<ApiResponse<{ token: string; type: string; username: string; email: string; role: string }>>("/auth/register", {
+    api.post<User>("/users", {
       username,
       email,
       password,
     }),
-  login: (username: string, password: string) =>
-    api.post<ApiResponse<{ token: string; type: string; username: string; email: string; role: string }>>("/auth/login", {
-      username,
-      password,
-    }),
+};
+
+// User APIs
+export const userAPI = {
+  getAll: () => api.get<User[]>("/users"),
+  getById: (id: number) => api.get<User>(`/users/${id}`),
+  create: (data: Partial<User>) => api.post<User>("/users", data),
+  update: (id: number, data: Partial<User>) => api.put<User>(`/users/${id}`, data),
+  delete: (id: number) => api.delete(`/users/${id}`),
 };
 
 // Product APIs
 export const productAPI = {
-  getAll: (page: number = 0, size: number = 10, sortBy: string = "id", sortDir: string = "asc") =>
-    api.get<ApiResponse<PageResponse<Product>>>(
-      `/products?page=${page}&size=${size}&sortBy=${sortBy}&sortDir=${sortDir}`
-    ),
-  getById: (id: number) =>
-    api.get<ApiResponse<Product>>(`/products/${id}`),
-  search: (name?: string, category?: string, page: number = 0, size: number = 10, sortBy: string = "id", sortDir: string = "asc") =>
-    api.get<ApiResponse<PageResponse<Product>>>("/products/search", {
-      params: { name, category, page, size, sortBy, sortDir },
-    }),
-  create: (data: CreateProductRequest) =>
-    api.post<ApiResponse<Product>>("/products", data),
-  update: (id: number, data: CreateProductRequest) =>
-    api.put<ApiResponse<Product>>(`/products/${id}`, data),
-  delete: (id: number) =>
-    api.delete<ApiResponse<void>>(`/products/${id}`),
+  getAll: (limit?: number, sort?: "asc" | "desc") => {
+    const params = new URLSearchParams();
+    if (limit) params.append("limit", limit.toString());
+    if (sort) params.append("sort", sort);
+    return api.get<Product[]>(`/products${params.toString() ? `?${params.toString()}` : ""}`);
+  },
+  getById: (id: number) => api.get<Product>(`/products/${id}`),
+  getCategories: () => api.get<string[]>("/products/categories"),
+  getByCategory: (category: string, limit?: number, sort?: "asc" | "desc") => {
+    const params = new URLSearchParams();
+    if (limit) params.append("limit", limit.toString());
+    if (sort) params.append("sort", sort);
+    return api.get<Product[]>(`/products/category/${category}${params.toString() ? `?${params.toString()}` : ""}`);
+  },
+  create: (data: CreateProductRequest) => api.post<Product>("/products", data),
+  update: (id: number, data: Partial<CreateProductRequest>) => api.put<Product>(`/products/${id}`, data),
+  delete: (id: number) => api.delete(`/products/${id}`),
 };
 
-// Order APIs
-export const orderAPI = {
-  getAll: (page: number = 0, size: number = 10, sortBy: string = "orderDate", sortDir: string = "desc") =>
-    api.get<ApiResponse<PageResponse<Order>>>(
-      `/orders?page=${page}&size=${size}&sortBy=${sortBy}&sortDir=${sortDir}`
-    ),
-  getById: (id: number) =>
-    api.get<ApiResponse<Order>>(`/orders/${id}`),
-  getByEmail: (email: string) =>
-    api.get<ApiResponse<Order[]>>(`/orders/customer/${email}`),
-  create: (data: CreateOrderRequest) =>
-    api.post<ApiResponse<Order>>("/orders", data),
-  updateStatus: (id: number, status: string) =>
-    api.put<ApiResponse<Order>>(`/orders/${id}/status`, { status }),
-  cancel: (id: number) =>
-    api.delete<ApiResponse<void>>(`/orders/${id}`),
+// Cart APIs (acts as orders in Fake Store API)
+export const cartAPI = {
+  getAll: (limit?: number, sort?: "asc" | "desc") => {
+    const params = new URLSearchParams();
+    if (limit) params.append("limit", limit.toString());
+    if (sort) params.append("sort", sort);
+    return api.get<Cart[]>(`/carts${params.toString() ? `?${params.toString()}` : ""}`);
+  },
+  getById: (id: number) => api.get<Cart>(`/carts/${id}`),
+  getByUser: (userId: number) => api.get<Cart[]>(`/carts/user/${userId}`),
+  create: (data: CreateCartRequest) => api.post<Cart>("/carts", data),
+  update: (id: number, data: Partial<CreateCartRequest>) => api.put<Cart>(`/carts/${id}`, data),
+  delete: (id: number) => api.delete(`/carts/${id}`),
 };
 
 export default api;

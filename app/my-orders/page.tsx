@@ -4,19 +4,30 @@ import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useRouter } from 'next/navigation';
 import { RootState } from "@/lib/store";
-import { orderAPI } from "@/lib/api";
+import { cartAPI, productAPI } from "@/lib/api";
 import { Header } from "@/components/header";
-import { Order } from "@/lib/types";
+import { Cart, Product } from "@/lib/types";
 import { useToast } from "@/components/ui/toast-provider";
 import { PuffLoader } from "react-spinners";
 import { useTranslation } from 'react-i18next';
+
+interface CartProduct {
+  productId: number;
+  quantity: number;
+  product?: Product;
+}
+
+interface OrderWithProducts extends Omit<Cart, 'products'> {
+  products: CartProduct[];
+  totalAmount?: number;
+}
 
 export default function MyOrdersPage() {
   const { user } = useSelector((state: RootState) => state.auth);
   const router = useRouter();
   const { showToast } = useToast();
   const { t } = useTranslation();
-  const [orders, setOrders] = useState<Order[]>([]);
+  const [orders, setOrders] = useState<OrderWithProducts[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -31,8 +42,31 @@ export default function MyOrdersPage() {
   const fetchOrders = async () => {
     try {
       setIsLoading(true);
-      const response = await orderAPI.getByEmail(user?.email || "");
-      setOrders(response.data.data || []);
+      // Get carts for user (Fake Store API uses userId 1-10)
+      const response = await cartAPI.getByUser(user?.id || 1);
+      const carts = response.data || [];
+      
+      // Fetch product details for each cart item
+      const ordersWithProducts: OrderWithProducts[] = await Promise.all(
+        carts.map(async (cart) => {
+          const productsWithDetails: CartProduct[] = await Promise.all(
+            cart.products.map(async (item) => {
+              try {
+                const productResponse = await productAPI.getById(item.productId);
+                return { ...item, product: productResponse.data };
+              } catch {
+                return { productId: item.productId, quantity: item.quantity };
+              }
+            })
+          );
+          const totalAmount = productsWithDetails.reduce((sum, item) => {
+            return sum + (item.product?.price || 0) * item.quantity;
+          }, 0);
+          return { ...cart, products: productsWithDetails, totalAmount };
+        })
+      );
+      
+      setOrders(ordersWithProducts);
     } catch {
       showToast(t('orders.loadFailed'), "error");
     } finally {
@@ -74,26 +108,18 @@ export default function MyOrdersPage() {
                   <div>
                     <h3 className="font-bold text-lg">Order #{order.id}</h3>
                     <p className="text-text-secondary text-sm">
-                      {new Date(order.orderDate).toLocaleDateString()}
+                      {new Date(order.date).toLocaleDateString()}
                     </p>
                   </div>
-                  <span
-                    className={`badge ${
-                      order.status === "DELIVERED"
-                        ? "badge-success"
-                        : order.status === "CANCELLED"
-                        ? "badge-error"
-                        : "badge-warning"
-                    }`}
-                  >
-                    {order.status}
+                  <span className="badge badge-success">
+                    DELIVERED
                   </span>
                 </div>
 
                 <div className="flex justify-between items-end">
                   <div>
-                    <p className="text-text-secondary text-sm mb-1">{t('orders.items')}: {order.orderItems.length}</p>
-                    <p className="font-bold text-lg text-accent">${order.totalAmount.toFixed(2)}</p>
+                    <p className="text-text-secondary text-sm mb-1">{t('orders.items')}: {order.products.length}</p>
+                    <p className="font-bold text-lg text-accent">${order.totalAmount?.toFixed(2)}</p>
                   </div>
                   <button
                     onClick={() => router.push(`/orders/${order.id}`)}

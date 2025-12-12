@@ -12,6 +12,7 @@ import { useToast } from "@/components/ui/toast-provider";
 import { FaLongArrowAltLeft } from "react-icons/fa";
 import { useTranslation } from 'react-i18next';
 import { PuffLoader } from "react-spinners";
+import Image from "next/image";
 
 export default function ProductDetailPage() {
   const { id } = useParams();
@@ -33,7 +34,7 @@ export default function ProductDetailPage() {
     try {
       setIsLoading(true);
       const response = await productAPI.getById(Number(id));
-      setProduct(response.data.data || null);
+      setProduct(response.data || null);
     } catch {
       showToast(t('products.loadProductFailed'), "error");
       router.push("/products");
@@ -88,40 +89,49 @@ export default function ProductDetailPage() {
         </button>
 
         <div className="grid md:grid-cols-2 gap-8">
-          <div className="bg-surface-secondary h-96 rounded-lg flex items-center justify-center">
-            <div className="text-8xl">📦</div>
+          <div className="bg-white h-96 rounded-lg flex items-center justify-center p-8">
+            <Image
+              src={product.image}
+              alt={product.title}
+              width={300}
+              height={300}
+              className="object-contain h-full w-auto"
+            />
           </div>
 
           <div>
-            <h1 className="text-3xl font-bold mb-4">{product.name}</h1>
-            <p className="text-2xl text-accent font-bold mb-4">${product.price}</p>
-
-            <div className="mb-6">
-              <span className={`badge ${product.stock > 0 ? "badge-success" : "badge-error"}`}>
-                {product.stock > 0 ? t('products.inStock', { count: product.stock }) : t('products.outOfStock')}
+            <h1 className="text-3xl font-bold mb-4">{product.title}</h1>
+            <p className="text-2xl text-accent font-bold mb-4">${product.price.toFixed(2)}</p>
+            
+            <div className="flex items-center gap-4 mb-4">
+              <span className="badge badge-success">
+                {product.category}
+              </span>
+              <span className="flex items-center gap-1 text-yellow-500">
+                ⭐ {product.rating.rate} ({product.rating.count} reviews)
               </span>
             </div>
 
-            {product.stock > 0 && (
-              <div className="space-y-4">
-                <div>
-                  <label className="label">{t('products.quantity')}</label>
-                  <input
-                    type="number"
-                    min="1"
-                    max={product.stock}
-                    value={quantity}
-                    onChange={(e) =>
-                      setQuantity(Math.min(product.stock, Math.max(1, parseInt(e.target.value) || 1)))
-                    }
-                    className="input-field w-full"
-                  />
-                </div>
-                <button onClick={handleAddToCart} className="btn-primary w-full">
-                  {t('products.addToCart')}
-                </button>
+            <p className="text-text-secondary mb-6">{product.description}</p>
+
+            <div className="space-y-4">
+              <div>
+                <label className="label">{t('products.quantity')}</label>
+                <input
+                  type="number"
+                  min="1"
+                  max={99}
+                  value={quantity}
+                  onChange={(e) =>
+                    setQuantity(Math.min(99, Math.max(1, parseInt(e.target.value) || 1)))
+                  }
+                  className="input-field w-full"
+                />
               </div>
-            )}
+              <button onClick={handleAddToCart} className="btn-primary w-full">
+                {t('products.addToCart')}
+              </button>
+            </div>
           </div>
         </div>
       </main>

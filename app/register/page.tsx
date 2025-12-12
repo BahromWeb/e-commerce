@@ -55,14 +55,19 @@ export default function RegisterPage() {
         data.password
       );
 
-      if (response.data.data) {
-        const { token, username, email, role } = response.data.data;
-        const user = { username, email, role };
-        localStorage.setItem("authToken", token);
-        localStorage.setItem("user", JSON.stringify(user));
-        dispatch(setUser({ user, token }));
-        showToast(t('auth.registrationSuccess'), "success");
-        router.push("/products");
+      if (response.data) {
+        // Fake Store API returns the created user but no token for register
+        // Auto-login after registration
+        const loginResponse = await authAPI.login(data.username, data.password);
+        if (loginResponse.data.token) {
+          const token = loginResponse.data.token;
+          const user = { username: data.username, email: data.email, role: "USER" };
+          localStorage.setItem("authToken", token);
+          localStorage.setItem("user", JSON.stringify(user));
+          dispatch(setUser({ user, token }));
+          showToast(t('auth.registrationSuccess'), "success");
+          router.push("/products");
+        }
       }
     } catch (error: unknown) {
       const err = error as { response?: { data?: { message?: string } } };

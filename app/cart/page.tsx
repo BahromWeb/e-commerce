@@ -5,9 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useSelector, useDispatch } from "react-redux";
 import { RootState, removeFromCart, updateQuantity, clearCart } from "@/lib/store";
 import { Header } from "@/components/header";
-import { orderAPI } from "@/lib/api";
+import { cartAPI } from "@/lib/api";
 import { useToast } from "@/components/ui/toast-provider";
-import { CreateOrderRequest } from "@/lib/types";
 import { useTranslation } from 'react-i18next';
 import { PuffLoader } from "react-spinners";
 
@@ -26,9 +25,8 @@ export default function CartPage() {
 
   const handleUpdateQuantity = (productId: number, quantity: number) => {
     if (quantity < 1) return;
-    const item = items.find(i => i.productId === productId);
-    if (item?.product && quantity > item.product.stock) {
-      showToast(t('cart.stockLimit', { stock: item.product.stock }), "warning");
+    if (quantity > 99) {
+      showToast(t('cart.stockLimit', { stock: 99 }), "warning");
       return;
     }
     dispatch(updateQuantity({ productId, quantity }));
@@ -53,18 +51,18 @@ export default function CartPage() {
 
     try {
       setIsLoading(true);
-      const orderData: CreateOrderRequest = {
-        customerName: user.username,
-        customerEmail: user.email,
-        orderItems: items.map(item => ({
+      
+      // Create cart/order using Fake Store API
+      const response = await cartAPI.create({
+        userId: user.id || 1,
+        date: new Date().toISOString().split('T')[0],
+        products: items.map(item => ({
           productId: item.productId,
           quantity: item.quantity,
         })),
-      };
+      });
 
-      const response = await orderAPI.create(orderData);
-      
-      if (response.data.success) {
+      if (response.data) {
         dispatch(clearCart());
         showToast(t('cart.orderPlaced'), "success");
         router.push("/my-orders");
@@ -107,11 +105,19 @@ export default function CartPage() {
               {items.map((item) => (
                 <div key={item.productId} className="card p-4">
                   <div className="flex flex-col sm:flex-row gap-4">
-                    <div className="bg-surface-secondary w-full sm:w-24 h-32 sm:h-24 rounded-lg flex items-center justify-center shrink-0">
-                      <span className="text-3xl sm:text-3xl">📦</span>
+                    <div className="bg-white w-full sm:w-24 h-32 sm:h-24 rounded-lg flex items-center justify-center shrink-0 p-2">
+                      {item.product?.image ? (
+                        <img 
+                          src={item.product.image} 
+                          alt={item.product.title} 
+                          className="object-contain h-full w-auto"
+                        />
+                      ) : (
+                        <span className="text-3xl">📦</span>
+                      )}
                     </div>
                     <div className="flex-1">
-                      <h3 className="font-bold text-lg mb-1">{item.product?.name}</h3>
+                      <h3 className="font-bold text-lg mb-1 line-clamp-2">{item.product?.title}</h3>
                       <p className="text-text-secondary text-sm mb-2">
                         {t('cart.category')}: {item.product?.category}
                       </p>

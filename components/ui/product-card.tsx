@@ -7,6 +7,7 @@ import { RootState, addToCart } from "@/lib/store";
 import { useState } from "react";
 import { useToast } from "./toast-provider";
 import { useTranslation } from 'react-i18next';
+import Image from "next/image";
 
 export default function ProductCard({ product }: { product: Product }) {
   const dispatch = useDispatch();
@@ -27,32 +28,37 @@ export default function ProductCard({ product }: { product: Product }) {
 
   return (
     <div className="card overflow-hidden">
-      <div className="bg-surface-secondary h-48 flex items-center justify-center">
-        <div className="text-6xl">📦</div>
+      <div className="bg-white h-48 flex items-center justify-center p-4">
+        <Image
+          src={product.image}
+          alt={product.title}
+          width={150}
+          height={150}
+          className="object-contain h-full w-auto"
+        />
       </div>
       <div className="p-4">
-        <h3 className="font-bold text-lg mb-2">{product.name}</h3>
+        <h3 className="font-bold text-lg mb-2 line-clamp-2">{product.title}</h3>
         <p className="text-text-secondary text-sm mb-3">
           {t('cart.category')}: {product.category}
         </p>
         <div className="flex justify-between items-center mb-4">
           <span className="text-xl font-bold text-accent">${product.price.toFixed(2)}</span>
-          <span className={`badge ${product.stock > 0 ? "badge-success" : "badge-error"}`}>
-            {product.stock > 0 ? t('products.inStock', { count: product.stock }) : t('products.outOfStock')}
+          <span className="badge badge-success flex items-center gap-1">
+            ⭐ {product.rating.rate} ({product.rating.count})
           </span>
         </div>
         <div className="flex gap-2">
           <input
             type="number"
             min="1"
-            max={product.stock}
+            max={99}
             value={quantity}
-            onChange={(e) => setQuantity(Math.min(product.stock, Math.max(1, parseInt(e.target.value) || 1)))}
+            onChange={(e) => setQuantity(Math.min(99, Math.max(1, parseInt(e.target.value) || 1)))}
             className="input-field shrink-0 w-20"
           />
           <button
             onClick={handleAddToCart}
-            disabled={product.stock === 0}
             className="btn-primary flex-1"
           >
             {t('products.addToCart')}

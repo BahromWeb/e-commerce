@@ -1,9 +1,20 @@
 export interface User {
-  id?: string;
+  id?: number;
   username: string;
   email: string;
-  role: string;
-  createdAt?: string;
+  password?: string;
+  name?: {
+    firstname: string;
+    lastname: string;
+  };
+  address?: {
+    city: string;
+    street: string;
+    number: number;
+    zipcode: string;
+  };
+  phone?: string;
+  role?: string;
 }
 
 export interface AuthState {
@@ -15,12 +26,15 @@ export interface AuthState {
 
 export interface Product {
   id: number;
-  name: string;
+  title: string;
   price: number;
+  description: string;
   category: string;
-  stock: number;
-  isActive: boolean;
-  createdAt: string;
+  image: string;
+  rating: {
+    rate: number;
+    count: number;
+  };
 }
 
 export interface CartItem {
@@ -29,59 +43,32 @@ export interface CartItem {
   quantity: number;
 }
 
+export interface Cart {
+  id: number;
+  userId: number;
+  date: string;
+  products: { productId: number; quantity: number }[];
+}
+
 export interface Order {
   id: number;
-  customerName: string;
-  customerEmail: string;
-  orderDate: string;
-  status: "PENDING" | "CONFIRMED" | "SHIPPED" | "DELIVERED" | "CANCELLED";
-  totalAmount: number;
-  orderItems: OrderItem[];
+  userId: number;
+  date: string;
+  products: { productId: number; quantity: number }[];
+  status?: "PENDING" | "CONFIRMED" | "SHIPPED" | "DELIVERED" | "CANCELLED";
+  totalAmount?: number;
 }
 
-export interface OrderItem {
-  id: number;
-  productId: number;
-  productName: string;
-  quantity: number;
-  unitPrice: number;
-  totalPrice: number;
-}
-
-export interface OrderItemRequest {
-  productId: number;
-  quantity: number;
-}
-
-export interface CreateOrderRequest {
-  customerName: string;
-  customerEmail: string;
-  orderItems: OrderItemRequest[];
+export interface CreateCartRequest {
+  userId: number;
+  date: string;
+  products: { productId: number; quantity: number }[];
 }
 
 export interface CreateProductRequest {
-  name: string;
+  title: string;
   price: number;
-  stock: number;
+  description: string;
+  image: string;
   category: string;
-  isActive?: boolean;
-}
-
-export interface ApiResponse<T> {
-  success: boolean;
-  data?: T;
-  message?: string;
-  error?: string;
-}
-
-export interface PageResponse<T> {
-  totalElements: number;
-  totalPages: number;
-  size: number;
-  content: T[];
-  number: number;
-  numberOfElements: number;
-  first: boolean;
-  last: boolean;
-  empty: boolean;
 }
