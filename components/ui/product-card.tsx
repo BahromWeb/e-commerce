@@ -2,73 +2,72 @@
 
 import { Product } from "@/lib/types";
 import Link from "next/link";
-import { useDispatch, useSelector } from "react-redux";
-import { RootState, addToCart } from "@/lib/store";
+import { useDispatch } from "react-redux";
+import { addToCart } from "@/lib/store";
 import { useState } from "react";
-import { useToast } from "./toast-provider";
-import { useTranslation } from 'react-i18next';
+import { message } from 'antd';
 import Image from "next/image";
+import { FiShoppingCart, FiStar } from "react-icons/fi";
 
 export default function ProductCard({ product }: { product: Product }) {
   const dispatch = useDispatch();
-  const { user } = useSelector((state: RootState) => state.auth);
-  const { showToast } = useToast();
-  const { t } = useTranslation();
   const [quantity, setQuantity] = useState(1);
 
   const handleAddToCart = () => {
-    if (!user) {
-      showToast(t('cart.loginFirst'), "warning");
-      return;
-    }
     dispatch(addToCart({ product, quantity }));
-    showToast(t('cart.itemAdded', { quantity }), "success");
+    message.success(`Added ${quantity} item(s) to cart`);
     setQuantity(1);
   };
 
   return (
-    <div className="card overflow-hidden">
-      <div className="bg-white h-48 flex items-center justify-center p-4">
+    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:border-gray-300 hover:shadow-sm transition-all flex flex-col h-full">
+      <div className="bg-gray-50 h-56 flex items-center justify-center p-4">
         <Image
           src={product.image}
           alt={product.title}
-          width={150}
-          height={150}
+          width={180}
+          height={180}
           className="object-contain h-full w-auto"
         />
       </div>
-      <div className="p-4">
-        <h3 className="font-bold text-lg mb-2 line-clamp-2">{product.title}</h3>
-        <p className="text-text-secondary text-sm mb-3">
-          {t('cart.category')}: {product.category}
+      <div className="p-4 flex flex-col grow">
+        <h3 className="font-medium text-base mb-2 line-clamp-2 text-gray-900">
+          {product.title}
+        </h3>
+        <p className="text-gray-500 text-sm mb-3 capitalize">
+          {product.category}
         </p>
         <div className="flex justify-between items-center mb-4">
-          <span className="text-xl font-bold text-accent">${product.price.toFixed(2)}</span>
-          <span className="badge badge-success flex items-center gap-1">
-            ⭐ {product.rating.rate} ({product.rating.count})
+          <span className="text-xl font-semibold text-gray-900">
+            ${product.price.toFixed(2)}
+          </span>
+          <span className="flex items-center gap-1 text-sm text-gray-600">
+            <FiStar className="text-yellow-500" />
+            {product.rating.rate}
           </span>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 mb-3 mt-auto">
           <input
             type="number"
             min="1"
             max={99}
             value={quantity}
             onChange={(e) => setQuantity(Math.min(99, Math.max(1, parseInt(e.target.value) || 1)))}
-            className="input-field shrink-0 w-20"
+            className="border border-gray-300 rounded px-3 py-2 w-16 text-center focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
           />
           <button
             onClick={handleAddToCart}
-            className="btn-primary flex-1"
+            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded transition-colors flex items-center justify-center gap-2"
           >
-            {t('products.addToCart')}
+            <FiShoppingCart />
+            Add
           </button>
         </div>
         <Link
           href={`/products/${product.id}`}
-          className="block text-center text-accent hover:underline mt-3"
+          className="block text-center text-blue-600 hover:text-blue-700 text-sm font-medium"
         >
-          {t('products.viewDetails')}
+          View Details
         </Link>
       </div>
     </div>

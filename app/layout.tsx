@@ -7,8 +7,8 @@ import { Providers } from "@/components/ui/providers";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "E-Commerce Order Management System",
-  description: "Modern order management system for products and orders",
+  title: "Mini Marketplace - Shop Amazing Products",
+  description: "Discover amazing products at great prices. Browse, add to cart, and manage your shopping easily.",
 };
 
 export default function RootLayout({

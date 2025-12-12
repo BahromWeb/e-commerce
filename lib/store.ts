@@ -1,45 +1,31 @@
 import { configureStore, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { User, AuthState, CartItem, Product } from "./types";
+import { CartItem, Product } from "./types";
 
-const initialAuthState: AuthState = {
-  user: null,
-  token: null,
-  isLoading: false,
-  error: null,
-};
-
-const authSlice = createSlice({
-  name: "auth",
-  initialState: initialAuthState,
-  reducers: {
-    setLoading: (state, action: PayloadAction<boolean>) => {
-      state.isLoading = action.payload;
-    },
-    setUser: (state, action: PayloadAction<{ user: User; token: string }>) => {
-      state.user = action.payload.user;
-      state.token = action.payload.token;
-      state.error = null;
-    },
-    setError: (state, action: PayloadAction<string>) => {
-      state.error = action.payload;
-      state.isLoading = false;
-    },
-    logout: (state) => {
-      state.user = null;
-      state.token = null;
-      state.error = null;
-    },
-  },
-});
-
+// Cart state interface
 interface CartState {
   items: CartItem[];
 }
 
-const initialCartState: CartState = {
-  items: [],
+// Initialize cart from localStorage if available
+const loadCartFromLocalStorage = (): CartItem[] => {
+  if (typeof window !== 'undefined') {
+    const savedCart = localStorage.getItem('cart');
+    if (savedCart) {
+      try {
+        return JSON.parse(savedCart);
+      } catch {
+        return [];
+      }
+    }
+  }
+  return [];
 };
 
+const initialCartState: CartState = {
+  items: loadCartFromLocalStorage(),
+};
+
+// Cart slice with localStorage persistence
 const cartSlice = createSlice({
   name: "cart",
   initialState: initialCartState,
@@ -57,6 +43,7 @@ const cartSlice = createSlice({
           quantity: action.payload.quantity,
         });
       }
+      // Persist to localStorage
       if (typeof window !== 'undefined') {
         localStorage.setItem('cart', JSON.stringify(state.items));
       }
@@ -65,6 +52,7 @@ const cartSlice = createSlice({
       state.items = state.items.filter(
         (item) => item.productId !== action.payload
       );
+      // Persist to localStorage
       if (typeof window !== 'undefined') {
         localStorage.setItem('cart', JSON.stringify(state.items));
       }
@@ -78,6 +66,7 @@ const cartSlice = createSlice({
       );
       if (item) {
         item.quantity = action.payload.quantity;
+        // Persist to localStorage
         if (typeof window !== 'undefined') {
           localStorage.setItem('cart', JSON.stringify(state.items));
         }
@@ -85,6 +74,7 @@ const cartSlice = createSlice({
     },
     clearCart: (state) => {
       state.items = [];
+      // Clear from localStorage
       if (typeof window !== 'undefined') {
         localStorage.removeItem('cart');
       }
@@ -95,16 +85,17 @@ const cartSlice = createSlice({
   },
 });
 
+// Configure store
 export const store = configureStore({
   reducer: {
-    auth: authSlice.reducer,
     cart: cartSlice.reducer,
   },
 });
 
-export const { setLoading, setUser, setError, logout } = authSlice.actions;
+// Export actions
 export const { addToCart, removeFromCart, updateQuantity, clearCart, loadCart } =
   cartSlice.actions;
 
+// Export types
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
